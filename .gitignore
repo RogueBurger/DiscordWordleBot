@@ -2,3 +2,5 @@
 venv/
 *.pyc
 config.yaml
+wordle.db
+wordlist.txt

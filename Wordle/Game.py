@@ -1,7 +1,5 @@
-import sqlite3
-from contextlib import closing
-
 from Helpers.RandomText import RandomText
+from Wordle.Words import Words
 
 
 class Game:
@@ -13,18 +11,15 @@ class Game:
         self.word_length: int = word_length
         self.num_guesses: int = 0
         self.target: str = ''
-        self.con = sqlite3.connect('words.db')
+        self.definition: str = ''
+        self.guesses: list = []
 
         self.generate_target()
 
     def generate_target(self):
-        with closing(self.con.cursor()) as cur:
-            cur.execute(
-                'SELECT word, LENGTH(word) FROM words WHERE LENGTH(word)=? ORDER BY RANDOM() LIMIT 1',
-                (self.word_length,)
-            )
-            result = cur.fetchone()
-            self.target = result[0]
+        self.target, self.definition = Words.get_random_word(self.word_length)
+
+        print(f'New game started: "{self.target}"')
 
     def guess(self, word) -> tuple:
         lowered_word = word.lower()
@@ -32,20 +27,18 @@ class Game:
             return self.INVALID, f'Your guesses must be {self.word_length} letters long.'
 
         if lowered_word == self.target:
-            return self.CORRECT, f'{word} is the correct answer! Congrats!'
+            return self.CORRECT, f'{word} is the correct answer! Congrats! {word}: {self.definition}'
 
-        if not self.word_exists(lowered_word):
+        if not Words.get_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}'
 
-        return self.INCORRECT, f'That is incorrect: {self.format_word(word)}'
+        formatted_word = self.format_word(word)
+        self.guesses.append(formatted_word)
 
-    def word_exists(self, word):
-        with closing(self.con.cursor()) as cur:
-            cur.execute('SELECT id FROM words WHERE word=?', (word,))
-            if cur.fetchone():
-                return True
+        return self.INCORRECT, f'That is incorrect: {formatted_word}'
 
-        return False
+    def get_history(self):
+        return self.guesses
 
     def format_word(self, word):
         return ' '.join([self.format_letter(letter.lower(), index) for index, letter in enumerate(word)])

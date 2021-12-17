@@ -3,6 +3,7 @@ from typing import Optional
 from discord.ext import commands
 
 from .Game import Game
+from .Words import Words
 
 
 class Wordle(commands.Cog):
@@ -23,7 +24,7 @@ class Wordle(commands.Cog):
         except KeyError:
             return False
 
-    @commands.command()
+    @commands.command(aliases=['s'])
     async def start(self, ctx, param: str = '5'):
         first_guess: Optional[str]
         word_length: int
@@ -40,8 +41,8 @@ class Wordle(commands.Cog):
             word_length = len(param)
             first_guess = param
 
-        if word_length < 2 or word_length > 15:
-            return await ctx.send('Unfortunately I only support words with between 2 and 15 letters.')
+        if word_length < 2 or word_length > 20:
+            return await ctx.send('Unfortunately I only support words with between 2 and 20 letters.')
 
         self.games[ctx.message.channel.id] = Game(word_length)
 
@@ -56,16 +57,20 @@ class Wordle(commands.Cog):
 
     @commands.command()
     async def stop(self, ctx):
-        if not self.__stop_current_game(ctx.message.channel.id):
-            return await ctx.send(
-                'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
+        game = self.__get_current_game(ctx.message.channel.id)
+
+        if game:
+            await ctx.send(
+                f'Game stopped. The answer was {game.target}: {game.definition}.'
             )
+            self.__stop_current_game(ctx.message.channel.id)
+            return
 
         return await ctx.send(
-            'Game stopped. To start a new one, use `%start <word_length=5>`.'
+            'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
         )
 
-    @commands.command()
+    @commands.command(aliases=['g'])
     async def guess(self, ctx, word=None):
         game = self.__get_current_game(ctx.message.channel.id)
 
@@ -79,6 +84,34 @@ class Wordle(commands.Cog):
             self.__stop_current_game(ctx.message.channel.id)
 
         return await ctx.send(message)
+
+    @commands.command(aliases=['d'])
+    async def define(self, ctx, word):
+        definitions = Words.get_definitions_by_word(word)
+
+        if not definitions:
+            return await ctx.send('I don\'t know what that word means, sorry!')
+
+        await ctx.send(f'{word}:')
+        for definition in definitions:
+            text = definition[0].replace("\n", '')
+            await ctx.send(f'* {text}')
+
+        return
+
+    @commands.command(aliases=['p'])
+    async def progress(self, ctx):
+        game = self.__get_current_game(ctx.message.channel.id)
+
+        if not game:
+            return await ctx.send(
+                'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
+            )
+
+        guesses = game.get_history()
+        return await ctx.send(
+            'Guesses so far:\n' + '\n'.join([f'`{guess}`' for guess in guesses])
+        )
 
     @commands.command()
     async def h(self, ctx):
