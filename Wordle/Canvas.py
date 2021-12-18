@@ -8,11 +8,14 @@ from PIL import Image as PILImage
 from PIL import ImageDraw, ImageFont
 from discord import File
 
+
 class UnsupportedCharacterException(Exception):
     pass
 
+
 class UnsupportedColorException(Exception):
     pass
+
 
 class Image:
     def __init__(self, image: PILImage, format = 'png'):
@@ -31,16 +34,20 @@ class Image:
         arr.seek(0)
         return File(arr, self.name())
 
+
 class Word(Image):
     pass
 
+
 class Glyph(Image):
     pass
+
 
 class GlyphColor(Enum):
     HOT = '#6aaa64'
     WARM = '#c9b458'
     COLD = '#86888a'
+
 
 class Canvas:
     # TODO: Implement a safe solution for a dynamic alphabet
@@ -67,7 +74,6 @@ class Canvas:
         max_char_height = max([self._font.getsize(char)[1] for char in self.ALPHABET])
         self.glyph_width = max_char_width + int(max_char_width * self.HORIZONTAL_PADDING_FACTOR)
         self.glyph_height = max_char_height + int(max_char_height * self.VERTICAL_PADDING_FACTOR)
-
 
     def draw_char(self, char: str, color: GlyphColor) -> Glyph:
         if char not in self._glyphs.keys():
@@ -102,7 +108,6 @@ class Canvas:
         self._glyphs[char][color] = Glyph(image=img)
         return self._glyphs[char][color]
 
-
     def draw_word(self, glyphs: List[Glyph]) -> Word:
         img = PILImage.new(
             'RGB',
@@ -113,7 +118,6 @@ class Canvas:
             img.paste(glyph.image, (idx * self.glyph_width, 0))
 
         return Word(img)
-
 
     def vertical_join(self, top: Image, bottom: Image) -> Image:
         width = max(top.width, bottom.width)
