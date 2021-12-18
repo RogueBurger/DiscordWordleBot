@@ -32,7 +32,7 @@ class Game:
         if not Words.get_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}'
 
-        formatted_word = self.format_word(word)
+        formatted_word = self.__format_word(word)
         self.guesses.append(formatted_word)
 
         return self.INCORRECT, f'That is incorrect: {formatted_word}'
@@ -40,10 +40,10 @@ class Game:
     def get_history(self):
         return self.guesses
 
-    def format_word(self, word):
-        return ' '.join([self.format_letter(letter.lower(), index) for index, letter in enumerate(word)])
+    def __format_word(self, word):
+        return ' '.join([self.__format_letter(letter.lower(), index) for index, letter in enumerate(word)])
 
-    def format_letter(self, letter, index):
+    def __format_letter(self, letter, index):
         if self.target[index] == letter:
             return chr(ord(letter) + 127215)
 

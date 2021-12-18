@@ -11,6 +11,7 @@ class Wordle(commands.Cog):
         self.bot = bot
         self.games: dict = {}
 
+    # TODO: Create a GameManager class instead of just a games dict to hold games and methods for accessing them
     def __get_current_game(self, channel_id: int):
         try:
             return self.games[channel_id]

@@ -9,6 +9,7 @@ from Wordle.Wordle import Wordle
 from Wordle.Words import Words
 
 if __name__ == '__main__':
+    # TODO: Extract all this setup to a separate function or class
     try:
         with open("config.yaml", "r") as stream:
             config = yaml.safe_load(stream)
