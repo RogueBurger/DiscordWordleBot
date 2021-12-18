@@ -7,7 +7,7 @@ class Game:
     INCORRECT = 'incorrect'
     INVALID = 'invalid'
 
-    def __init__(self, word_length=5):
+    def __init__(self, word_length: int = 5):
         self.word_length: int = word_length
         self.num_guesses: int = 0
         self.target: str = ''
@@ -21,9 +21,10 @@ class Game:
 
         print(f'New game started: "{self.target}"')
 
-    def guess(self, word) -> tuple:
+    def guess(self, word: str) -> tuple:
         lowered_word = word.lower()
         if not word or len(word) != self.word_length:
+            # TODO: something else should probably be in charge of generating these responses
             return self.INVALID, f'Your guesses must be {self.word_length} letters long.'
 
         if lowered_word == self.target:
@@ -37,13 +38,13 @@ class Game:
 
         return self.INCORRECT, f'That is incorrect: {formatted_word}'
 
-    def get_history(self):
+    def get_history(self) -> list:
         return self.guesses
 
-    def __format_word(self, word):
+    def __format_word(self, word: str) -> str:
         return ' '.join([self.__format_letter(letter.lower(), index) for index, letter in enumerate(word)])
 
-    def __format_letter(self, letter, index):
+    def __format_letter(self, letter: str, index: int) -> str:
         if self.target[index] == letter:
             return chr(ord(letter) + 127215)
 

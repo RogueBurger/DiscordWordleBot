@@ -1,18 +1,17 @@
-import random
-
-import discord
+from discord import Message, Member
 from discord.ext import commands
+from discord.ext.commands import Bot, Context
 
 from Helpers.RandomText import RandomText
 
 
 class Ping(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.banned_users = {}
+    def __init__(self, bot: Bot):
+        self.bot: Bot = bot
+        self.banned_users: dict = {}
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: Message):
         if message.author.bot:
             return
 
@@ -24,7 +23,7 @@ class Ping(commands.Cog):
 
     # TODO: implement a real ban system instead of this silly in-memory one
     @commands.command()
-    async def unban(self, ctx, member: discord.Member):
+    async def unban(self, ctx: Context, member: Member):
         if ctx.author.id != 108633439984439296:
             return
 
@@ -33,7 +32,7 @@ class Ping(commands.Cog):
         await ctx.send('User unbanned')
 
     @commands.command()
-    async def ban(self, ctx, member: discord.Member):
+    async def ban(self, ctx: Context, member: Member):
         if ctx.author.id != 108633439984439296:
             return
 

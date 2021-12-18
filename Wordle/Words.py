@@ -5,9 +5,9 @@ from contextlib import closing
 
 # TODO: Refactor this into more of true model, instead of one-off static methods
 class Words:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATABASE = os.path.join(BASE_DIR, "../wordle.db")
-    WORDLIST = os.path.join(BASE_DIR, "../wordlist.txt")
+    BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
+    DATABASE: str = os.path.join(BASE_DIR, "../wordle.db")
+    WORDLIST: str = os.path.join(BASE_DIR, "../wordlist.txt")
 
     @staticmethod
     def create_db():

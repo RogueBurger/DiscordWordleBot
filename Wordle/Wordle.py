@@ -1,24 +1,25 @@
 from typing import Optional
 
 from discord.ext import commands
+from discord.ext.commands import Context, Bot
 
 from .Game import Game
 from .Words import Words
 
 
 class Wordle(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
         self.games: dict = {}
 
     # TODO: Create a GameManager class instead of just a games dict to hold games and methods for accessing them
-    def __get_current_game(self, channel_id: int):
+    def __get_current_game(self, channel_id: int) -> Optional[Game]:
         try:
             return self.games[channel_id]
         except KeyError:
             return None
 
-    def __stop_current_game(self, channel_id):
+    def __stop_current_game(self, channel_id: int) -> bool:
         try:
             self.games.pop(channel_id)
             return True
@@ -26,7 +27,7 @@ class Wordle(commands.Cog):
             return False
 
     @commands.command(aliases=['s'])
-    async def start(self, ctx, param: str = '5'):
+    async def start(self, ctx: Context, param: str = '5'):
         first_guess: Optional[str]
         word_length: int
 
@@ -57,12 +58,12 @@ class Wordle(commands.Cog):
         return
 
     @commands.command()
-    async def stop(self, ctx):
+    async def stop(self, ctx: Context):
         game = self.__get_current_game(ctx.message.channel.id)
 
         if game:
             await ctx.send(
-                f'Game stopped. The answer was {game.target}: {game.definition}.'
+                f'Game stopped. The answer was {game.target}: {game.definition.strip()}'
             )
             self.__stop_current_game(ctx.message.channel.id)
             return
@@ -72,7 +73,7 @@ class Wordle(commands.Cog):
         )
 
     @commands.command(aliases=['g'])
-    async def guess(self, ctx, word=None):
+    async def guess(self, ctx: Context, word: Optional[str] = None):
         game = self.__get_current_game(ctx.message.channel.id)
 
         if not game:
@@ -87,7 +88,7 @@ class Wordle(commands.Cog):
         return await ctx.send(message)
 
     @commands.command(aliases=['d'])
-    async def define(self, ctx, word):
+    async def define(self, ctx: Context, word: str):
         definitions = Words.get_definitions_by_word(word)
 
         if not definitions:
@@ -101,7 +102,7 @@ class Wordle(commands.Cog):
         return
 
     @commands.command(aliases=['p'])
-    async def progress(self, ctx):
+    async def progress(self, ctx: Context):
         game = self.__get_current_game(ctx.message.channel.id)
 
         if not game:
@@ -113,21 +114,3 @@ class Wordle(commands.Cog):
         return await ctx.send(
             'Guesses so far:\n' + '\n'.join([f'`{guess}`' for guess in guesses])
         )
-
-    @commands.command()
-    async def h(self, ctx):
-        return await ctx.send('''
-Commands:
-`%start <word_length=5>` - starts a new game
-`%stop` - ends the current game early
-`%guess <word>` - makes a guess in the current game
-
-Formatting:
-After a guess, the bot will return your guess formatted according to these rules:
-~~a~~ (strikethrough) - The letter does not appear in the word
-`b` (backtick'd) - The letter appears in the word but in a different location
-c (normal) - The letter appears in the word and is in the correct location
-
-Special rules:
-Once a game is started, each person is allowed to contribute a single guess.
-        ''')
