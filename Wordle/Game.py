@@ -32,9 +32,12 @@ class Game:
             return self.INVALID, f'Your guesses must be {self.word_length} letters long.', None
 
         if lowered_word == self.target:
+            guess_word: str = 'guess' if self.num_guesses == 0 else 'guesses'
             return self.CORRECT, \
-                   f'{word} is the correct answer! Congrats! {word}: {self.definition}', \
-                   self.draw_word(word)
+                f'{word} is the correct answer! Congrats! ' \
+                f'It took you {self.num_guesses + 1} {guess_word}.\n' \
+                f'*{word}*: {self.definition.strip()}', \
+                self.draw_word(word)
 
         if not Words.get_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}', None
@@ -43,6 +46,7 @@ class Game:
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
             self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
+            self.num_guesses += 1
 
         return self.INCORRECT, None, drawn_word
 

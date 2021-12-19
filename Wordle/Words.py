@@ -4,6 +4,9 @@ from contextlib import closing
 
 
 # TODO: Refactor this into more of true model, instead of one-off static methods
+from Wordle.Word import Word
+
+
 class Words:
     BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
     DATABASE: str = os.path.join(BASE_DIR, "../wordle.db")
@@ -34,6 +37,28 @@ class Words:
                     except ValueError:
                         continue
         con.commit()
+
+    @staticmethod
+    def get_by_word(word: str) -> list[Word]:
+        con = sqlite3.connect(Words.DATABASE)
+        with closing(con.cursor()) as cur:
+            cur.execute(
+                'SELECT word, definition FROM words WHERE word=?',
+                (word.lower(),)
+            )
+            return [Word(row[0], row[1]) for row in cur.fetchall()]
+
+    @staticmethod
+    def get_random(word_length: int = 5):
+        con = sqlite3.connect(Words.DATABASE)
+        with closing(con.cursor()) as cur:
+            cur.execute(
+                'SELECT word, definition FROM words '
+                'WHERE LENGTH(word)=? ORDER BY RANDOM() LIMIT 1',
+                (word_length,)
+            )
+            row = cur.fetchone()
+            return Word(row[0], row[1]) if row else None
 
     @staticmethod
     def get_definitions_by_word(word: str) -> list:
