@@ -4,6 +4,8 @@ from contextlib import closing
 
 
 # TODO: Refactor this into more of true model, instead of one-off static methods
+from typing import Optional
+
 from Wordle.Word import Word
 
 
@@ -46,10 +48,10 @@ class Words:
                 'SELECT word, definition FROM words WHERE word=?',
                 (word.lower(),)
             )
-            return [Word(row[0], row[1]) for row in cur.fetchall()]
+            return [Words.__hydrate_word(row[0], row[1]) for row in cur.fetchall()]
 
     @staticmethod
-    def get_random(word_length: int = 5):
+    def get_random(word_length: int = 5) -> Optional[Word]:
         con = sqlite3.connect(Words.DATABASE)
         with closing(con.cursor()) as cur:
             cur.execute(
@@ -58,35 +60,9 @@ class Words:
                 (word_length,)
             )
             row = cur.fetchone()
-            return Word(row[0], row[1]) if row else None
+            return Words.__hydrate_word(row[0], row[1]) if row else None
 
     @staticmethod
-    def get_definitions_by_word(word: str) -> list:
-        con = sqlite3.connect(Words.DATABASE)
-        with closing(con.cursor()) as cur:
-            cur.execute(
-                'SELECT definition FROM words WHERE word=?',
-                (word.lower(),)
-            )
-            return cur.fetchall()
+    def __hydrate_word(word: str, definition: str) -> Word:
+        return Word(word, definition.replace('\n', '').strip())
 
-    @staticmethod
-    def get_word(word: str):
-        con = sqlite3.connect(Words.DATABASE)
-        with closing(con.cursor()) as cur:
-            cur.execute(
-                'SELECT word FROM words WHERE word=?',
-                (word.lower(),)
-            )
-            return cur.fetchone()
-
-    @staticmethod
-    def get_random_word(word_length: int = 5):
-        con = sqlite3.connect(Words.DATABASE)
-        with closing(con.cursor()) as cur:
-            cur.execute(
-                'SELECT word, definition FROM words '
-                'WHERE LENGTH(word)=? ORDER BY RANDOM() LIMIT 1',
-                (word_length,)
-            )
-            return cur.fetchone()

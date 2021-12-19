@@ -52,7 +52,7 @@ class Wordle(commands.Cog):
 
         if game:
             await ctx.send(
-                f'Game stopped. The answer was {game.target}: {game.definition.strip()}'
+                f'Game stopped. The answer was {game.target.word}: {game.target.definition}'
             )
             self.games.stop_current_game(ctx.message.channel.id)
             return
@@ -81,15 +81,14 @@ class Wordle(commands.Cog):
 
     @commands.command(aliases=['d'])
     async def define(self, ctx: Context, word: str):
-        definitions = Words.get_definitions_by_word(word)
+        words = Words.get_by_word(word)
 
-        if not definitions:
+        if not words:
             return await ctx.send('I don\'t know what that word means, sorry!')
 
         await ctx.send(f'{word}:')
-        for definition in definitions:
-            text = definition[0].replace("\n", '')
-            await ctx.send(f'* {text}')
+        for word in words:
+            await ctx.send(f'* {word.definition}')
 
         return
 
