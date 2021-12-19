@@ -35,18 +35,14 @@ class Image:
         return File(arr, self.name())
 
 
-class Word(Image):
-    pass
-
-
 class Glyph(Image):
     pass
 
 
 class GlyphColor(Enum):
-    HOT = '#6aaa64'
-    WARM = '#c9b458'
-    COLD = '#86888a'
+    HOT = ('#6aaa64ff', '#ffffffff')
+    WARM = ('#c9b458ff', '#ffffffe6')
+    COLD = ('#86888aff', '#ffffffcc')
 
 
 class Canvas:
@@ -83,15 +79,15 @@ class Canvas:
             raise UnsupportedColorException
 
         if not self._glyphs[char][color]:
-            self.generate_glyph(char=char, color=color)
+            self._generate_glyph(char=char, color=color)
 
         return self._glyphs[char][color]
 
-    def generate_glyph(self, char: str, color: GlyphColor):
+    def _generate_glyph(self, char: str, color: GlyphColor):
         img = PILImage.new(
-            'RGB',
+            'RGBA',
             (self.glyph_width, self.glyph_height),
-            color=color.value)
+            color=color.value[0])
 
         draw = ImageDraw.Draw(img)
 
@@ -103,27 +99,24 @@ class Canvas:
             ((self.glyph_width - width) / 2, max(0, (self.glyph_height - height) / 2)),
             text=char,
             font=self._font,
-            fill=self.BGCOLOR)
+            fill=color.value[1])
 
         self._glyphs[char][color] = Glyph(image=img)
-        return self._glyphs[char][color]
 
-    def draw_word(self, glyphs: List[Glyph]) -> Word:
+    def draw_word(self, glyphs: List[Glyph]) -> Image:
         img = PILImage.new(
-            'RGB',
+            'RGBA',
             (self.glyph_width * len(glyphs), self.glyph_height),
             color=self.BGCOLOR)
 
         for idx, glyph in enumerate(glyphs):
             img.paste(glyph.image, (idx * self.glyph_width, 0))
 
-        return Word(img)
+        return Image(img)
 
     def vertical_join(self, top: Image, bottom: Image) -> Image:
-        width = max(top.width, bottom.width)
-
         img = PILImage.new(
-            'RGB',
+            'RGBA',
             (max(top.width, bottom.width), top.height + bottom.height),
             color=self.BGCOLOR)
 
