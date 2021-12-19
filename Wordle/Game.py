@@ -1,3 +1,4 @@
+import string
 from typing import Optional
 
 from Helpers.RandomText import RandomText
@@ -50,17 +51,44 @@ class Game:
 
         return self.INCORRECT, None, drawn_word
 
+    def get_unused_letters(self):
+        letters = list(string.ascii_lowercase)
+        for word in self.guesses:
+            for letter in word:
+                letters.remove(letter) if letter in letters else None
+        return self.canvas.draw_word([self.canvas.draw_char(letter.upper(), GlyphColor.COLD) for letter in letters])
+
     def get_history(self) -> list:
         return self.guesses
 
     def draw_word(self, word):
-        return self.canvas.draw_word([self.draw_letter(letter.lower(), index) for index, letter in enumerate(word)])
+        return self.canvas.draw_word([self.draw_letter(letter) for letter in self.check_word(word)])
 
-    def draw_letter(self, letter, index) -> Glyph:
-        if self.target.word[index] == letter:
-            return self.canvas.draw_char(letter.upper(), GlyphColor.HOT)
+    def draw_letter(self, letter) -> Glyph:
+        if letter['status'] == self.CORRECT:
+            return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.HOT)
 
-        if letter in self.target.word:
-            return self.canvas.draw_char(letter.upper(), GlyphColor.WARM)
+        if letter['status'] == self.INCORRECT:
+            return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.WARM)
 
-        return self.canvas.draw_char(letter.upper(), GlyphColor.COLD)
+        return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.COLD)
+
+    def check_word(self, word):
+        target_map: list = [None if letter == word[i] else letter for i, letter in enumerate(self.target.word)]
+        guess_map: list = [
+            {'letter': letter, 'status': None} if target_map[i] else {'letter': letter, 'status': self.CORRECT}
+            for i, letter in enumerate(word)
+        ]
+
+        for i, letter in enumerate(guess_map):
+            if letter['status'] == self.CORRECT:
+                continue
+
+            if letter['letter'] in target_map:
+                target_map[target_map.index(letter['letter'])] = None
+                guess_map[i]['status'] = self.INCORRECT
+                continue
+
+            guess_map[i]['status'] = self.INVALID
+
+        return guess_map

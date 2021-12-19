@@ -107,3 +107,17 @@ class Wordle(commands.Cog):
             )
 
         return await ctx.send('Guesses so far:', file=game.progress.to_discord_file())
+
+    @commands.command(aliases=['h'])
+    async def hint(self, ctx: Context):
+        game = self.games.get_current_game(ctx.message.channel.id)
+
+        if not game:
+            return await ctx.send(
+                'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
+            )
+
+        return await ctx.send(
+            'These letters haven\'t been tried yet:',
+            file=game.get_unused_letters().to_discord_file()
+        )
