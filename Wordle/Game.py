@@ -44,7 +44,7 @@ class Game:
         if not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}', None
 
-        drawn_word = self.draw_word(word)
+        drawn_word = self.draw_word(lowered_word)
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
             self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
