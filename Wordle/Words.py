@@ -65,4 +65,3 @@ class Words:
     @staticmethod
     def __hydrate_word(word: str, definition: str) -> Word:
         return Word(word, definition.replace('\n', '').strip())
-
