@@ -66,10 +66,16 @@ class Canvas:
             } for char in list(self.ALPHABET)
         }
 
-        max_char_width = max([self._font.getsize(char)[0] for char in self.ALPHABET])
-        max_char_height = max([self._font.getsize(char)[1] for char in self.ALPHABET])
+        char_sizes = [self._font.getsize(char) for char in self.ALPHABET]
+        char_widths = [x[0] for x in char_sizes]
+        char_heights = [x[1] for x in char_sizes]
+        max_char_width = max(char_widths)
+        max_char_height = max(char_heights)
+        mode_char_height = max(char_heights, key=char_heights.count)
+
         self.glyph_width = max_char_width + int(max_char_width * self.HORIZONTAL_PADDING_FACTOR)
         self.glyph_height = max_char_height + int(max_char_height * self.VERTICAL_PADDING_FACTOR)
+        self.vertical_offset = (self.glyph_height - int(mode_char_height * self.FONT_HEIGHT_OFFSET_FACTOR)) / 2
 
     def draw_char(self, char: str, color: GlyphColor) -> Glyph:
         if char not in self._glyphs.keys():
@@ -96,7 +102,7 @@ class Canvas:
         height = int(height * self.FONT_HEIGHT_OFFSET_FACTOR)
 
         draw.text(
-            ((self.glyph_width - width) / 2, max(0, (self.glyph_height - height) / 2)),
+            ((self.glyph_width - width) / 2, self.vertical_offset),
             text=char,
             font=self._font,
             fill=color.value[1])
