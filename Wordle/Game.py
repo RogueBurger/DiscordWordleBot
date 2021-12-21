@@ -39,7 +39,7 @@ class Game:
                 f'{word} is the correct answer! Congrats! ' \
                 f'It took you {len(self.guesses) + 1} {guess_word}.\n' \
                 f'*{word}*: {self.target.definition}', \
-                self.draw_word(word)
+                self.draw_word(lowered_word)
 
         if not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}', None
