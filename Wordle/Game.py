@@ -35,6 +35,7 @@ class Game:
 
     def guess(self, word: str) -> tuple:
         lowered_word = word.lower()
+
         if not word or len(word) != len(self.target):
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
 
@@ -61,7 +62,9 @@ class Game:
                 f'*{self.target.word}*: {self.target.definition}', \
                 drawn_word
         if self.mode == self.LIMITED and self.INCORRECT:
-            return self.INCORRECT, f'Incorrect. You have {len(self.target) - len(self.guesses) + 1} {"guess" if ((len(self.target) - len(self.guesses) + 1)==1) else "guesses"} left.', drawn_word
+            remaining: int = len(self.target) - len(self.guesses) + 1
+            guess_word: str = 'guess' if remaining == 1 else 'guesses'
+            return self.INCORRECT, f'Incorrect. You have {remaining} {guess_word} left.', drawn_word
 
         return self.INCORRECT, None, drawn_word
 
