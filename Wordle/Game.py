@@ -52,7 +52,8 @@ class Game:
         drawn_word = self.draw_word(lowered_word)
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
-            self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
+            self.progress = self.canvas.vertical_join(
+                self.progress, drawn_word) if self.progress else drawn_word
 
         if self.mode == self.LIMITED and len(self.guesses) > len(self.target):
             return self.FAILED, \
@@ -60,7 +61,7 @@ class Game:
                 f'*{self.target.word}*: {self.target.definition}', \
                 drawn_word
         if self.mode == self.LIMITED and self.INCORRECT:
-            return self.INCORRECT, f'Incorrect. You have {len(self.target) - len(self.guesses) + 1} guesses left.', drawn_word
+            return self.INCORRECT, f'Incorrect. You have {len(self.target) - len(self.guesses) + 1} {"guess" if ((len(self.target) - len(self.guesses) + 1)==1) else "guesses"} left.', drawn_word
 
         return self.INCORRECT, None, drawn_word
 
@@ -87,9 +88,11 @@ class Game:
         return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.COLD)
 
     def check_word(self, word):
-        target_map: list = [None if letter == word[i] else letter for i, letter in enumerate(self.target.word)]
+        target_map: list = [None if letter == word[i]
+                            else letter for i, letter in enumerate(self.target.word)]
         guess_map: list = [
-            {'letter': letter, 'status': None} if target_map[i] else {'letter': letter, 'status': self.CORRECT}
+            {'letter': letter, 'status': None} if target_map[i] else {
+                'letter': letter, 'status': self.CORRECT}
             for i, letter in enumerate(word)
         ]
 
