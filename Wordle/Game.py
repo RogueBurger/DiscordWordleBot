@@ -11,10 +11,15 @@ class Game:
     CORRECT: str = 'correct'
     INCORRECT: str = 'incorrect'
     INVALID: str = 'invalid'
+    FAILED: str = 'failed'
 
-    def __init__(self, canvas: Canvas, word_length: int = 5):
+    EASY: str = 'easy'
+    LIMITED: str = 'limited'
+
+    def __init__(self, canvas: Canvas, mode: str, word_length: int = 5):
         self.canvas: Canvas = canvas
         self.target: Word = self.generate_target(word_length)
+        self.mode = mode
         self.guesses: list = []
         self.num_guesses: int = 0
         self.progress: Optional[Image] = None
@@ -48,6 +53,12 @@ class Game:
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
             self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
+
+        if self.mode == self.LIMITED and len(self.guesses) > len(self.target):
+            return self.FAILED, \
+                f'You have run out of guesses. The correct answer is {self.target.word}. ' \
+                f'*{self.target.word}*: {self.target.definition}', \
+                drawn_word
 
         return self.INCORRECT, None, drawn_word
 

@@ -16,33 +16,26 @@ class Wordle(commands.Cog):
         self.games: GameManager = GameManager()
 
     @commands.command(aliases=['s'])
-    async def start(self, ctx: Context, param: str = '5'):
-        first_guess: Optional[str]
-        word_length: int
+    async def start(self, ctx: Context, word_length: Optional[int] = 5, mode: Optional[str] = Game.EASY):
 
         if self.games.get_current_game(ctx.message.channel.id):
             return await ctx.send(
                 'Game already in progress. Use `%guess <word>` to continue playing, or `%stop` to end the game early.'
             )
 
-        if param.isnumeric():
-            word_length = int(param)
-            first_guess = None
-        else:
-            word_length = len(param)
-            first_guess = param
-
         if word_length < 2 or word_length > 20:
             return await ctx.send('Unfortunately I only support words with between 2 and 20 letters.')
 
-        self.games.add_game(ctx.message.channel.id, Game(self.canvas, word_length))
+        game = Game(self.canvas, word_length=word_length, mode=mode)
+
+        if not game.target:
+            return await ctx.send('Unfortunately I can\'t find a word of that length.')
+
+        self.games.add_game(ctx.message.channel.id, game)
 
         await ctx.send(
             f'Game started. I\'m think of a word that is {word_length} letter long. Can you guess it?'
         )
-
-        if first_guess:
-            await self.guess(ctx, first_guess)
 
         return
 
@@ -71,8 +64,11 @@ class Wordle(commands.Cog):
             )
 
         status, message, image = game.guess(word)
-        if status == Game.CORRECT:
+        if status in [Game.CORRECT, Game.FAILED]:
             self.games.stop_current_game(ctx.message.channel.id)
+
+        if status == Game.FAILED:
+            await ctx.send(file=image.to_discord_file())
 
         if status in [Game.INCORRECT, Game.CORRECT] and image:
             return await ctx.send(message, file=image.to_discord_file())
