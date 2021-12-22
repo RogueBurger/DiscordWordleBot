@@ -59,6 +59,8 @@ class Game:
                 f'You have run out of guesses. The correct answer is {self.target.word}. ' \
                 f'*{self.target.word}*: {self.target.definition}', \
                 drawn_word
+        if self.mode == self.LIMITED and self.INCORRECT:
+            return self.INCORRECT, f'Incorrect. You have {len(self.target) - len(self.guesses) + 1} guesses left.', drawn_word
 
         return self.INCORRECT, None, drawn_word
 
