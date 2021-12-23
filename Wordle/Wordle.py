@@ -34,7 +34,7 @@ class Wordle(commands.Cog):
         self.games.add_game(ctx.message.channel.id, game)
 
         await ctx.send(
-            f'Game started. I\'m think of a word that is {word_length} letter long. Can you guess it?'
+            f'Game started. I\'m think of a word that is {word_length} letters long. Can you guess it?'
         )
 
         return
