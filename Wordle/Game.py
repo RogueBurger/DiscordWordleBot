@@ -21,7 +21,6 @@ class Game:
         self.target: Word = self.generate_target(word_length)
         self.mode = mode
         self.guesses: list = []
-        self.num_guesses: int = 0
         self.progress: Optional[Image] = None
 
     @staticmethod
@@ -39,22 +38,20 @@ class Game:
         if not word or len(word) != len(self.target):
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
 
-        if lowered_word == self.target.word:
-            self.guesses.append(lowered_word)
-            return self.CORRECT, \
-                f'{word} is the correct answer! Congrats! ' \
-                f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
-                f'*{word}*: {self.target.definition}', \
-                self.draw_word(lowered_word)
-
-        if not Words.get_by_word(lowered_word):
+        if lowered_word != self.target.word and not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}', None
 
         drawn_word = self.draw_word(lowered_word)
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
-            self.progress = self.canvas.vertical_join(
-                self.progress, drawn_word) if self.progress else drawn_word
+            self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
+
+        if lowered_word == self.target.word:
+            return self.CORRECT, \
+                f'{word} is the correct answer! Congrats! ' \
+                f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
+                f'*{word}*: {self.target.definition}', \
+                self.progress
 
         if self.mode == self.LIMITED and len(self.guesses) > len(self.target):
             return self.FAILED, \
