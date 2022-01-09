@@ -40,10 +40,10 @@ class Game:
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
 
         if lowered_word == self.target.word:
-            guess_word: str = 'guess' if len(self.guesses) == 0 else 'guesses'
+            self.guesses.append(lowered_word)
             return self.CORRECT, \
                 f'{word} is the correct answer! Congrats! ' \
-                f'It took you {len(self.guesses) + 1} {guess_word}.\n' \
+                f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
                 f'*{word}*: {self.target.definition}', \
                 self.draw_word(lowered_word)
 
@@ -61,10 +61,11 @@ class Game:
                 f'You have run out of guesses. The correct answer is {self.target.word}. ' \
                 f'*{self.target.word}*: {self.target.definition}', \
                 drawn_word
-        if self.mode == self.LIMITED and self.INCORRECT:
+        if self.mode in [self.LIMITED, self.INCORRECT]:
             remaining: int = len(self.target) - len(self.guesses) + 1
-            guess_word: str = 'guess' if remaining == 1 else 'guesses'
-            return self.INCORRECT, f'Incorrect. You have {remaining} {guess_word} left.', drawn_word
+            return self.INCORRECT, \
+                f'Incorrect. You have {remaining} {self.get_guess_word(remaining)} left.', \
+                drawn_word
 
         return self.INCORRECT, None, drawn_word
 
@@ -111,3 +112,7 @@ class Game:
             guess_map[i]['status'] = self.INVALID
 
         return guess_map
+
+    @staticmethod
+    def get_guess_word(count: int) -> str:
+        return 'guess' if count == 1 else 'guesses'
