@@ -1,3 +1,5 @@
+import logging
+
 from discord import Message, Member
 from discord.ext import commands
 from discord.ext.commands import Bot, Context

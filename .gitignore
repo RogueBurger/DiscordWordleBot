@@ -1,6 +1,7 @@
 .idea/
 venv/
 *.pyc
+.env
 config.yaml
 wordle.db
 wordlist.txt

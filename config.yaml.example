@@ -1,2 +1,9 @@
 token: ""
 wordlist: "https://drive.google.com/u/0/uc?id=1XIFdZukAcDRiDIOgR_rHpICrrgJbLBxV&export=download"
+log_level: info
+
+# Uncomment to configure an external redis server
+# redis:
+#   enable: true
+#   host: redis.local
+#   port: 6379

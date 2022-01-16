@@ -16,8 +16,7 @@ class Game:
     EASY: str = 'easy'
     LIMITED: str = 'limited'
 
-    def __init__(self, canvas: Canvas, mode: str, word_length: int = 5):
-        self.canvas: Canvas = canvas
+    def __init__(self, mode: str, word_length: int = 5):
         self.target: Word = self.generate_target(word_length)
         self.mode = mode
         self.guesses: list = []
@@ -26,34 +25,28 @@ class Game:
 
     @staticmethod
     def generate_target(word_length):
-        target = Words.get_random(word_length)
+        return Words.get_random(word_length)
 
-        if target:
-            print(f'New game started: "{target.word}"')
-
-        return target
-
-    def guess(self, word: str) -> tuple:
-        lowered_word = word.lower()
-
+    def guess(self, word: str, canvas: Canvas) -> tuple:
         if not word or len(word) != len(self.target):
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
 
+        lowered_word = word.lower()
         if lowered_word == self.target.word:
             self.guesses.append(lowered_word)
             return self.CORRECT, \
                 f'{word} is the correct answer! Congrats! ' \
                 f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
                 f'*{word}*: {self.target.definition}', \
-                self.draw_word(lowered_word)
+                self.draw_word(lowered_word, canvas)
 
         if not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot()}', None
 
-        drawn_word = self.draw_word(lowered_word)
+        drawn_word = self.draw_word(lowered_word, canvas)
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
-            self.progress = self.canvas.vertical_join(
+            self.progress = canvas.vertical_join(
                 self.progress, drawn_word) if self.progress else drawn_word
 
         if self.mode == self.LIMITED and len(self.guesses) > len(self.target):
@@ -69,27 +62,27 @@ class Game:
 
         return self.INCORRECT, None, drawn_word
 
-    def get_unused_letters(self):
+    def get_unused_letters(self, canvas: Canvas):
         letters = list(string.ascii_lowercase)
         for word in self.guesses:
             for letter in word:
                 letters.remove(letter) if letter in letters else None
-        return self.canvas.draw_word([self.canvas.draw_char(letter.upper(), GlyphColor.COLD) for letter in letters])
+        return canvas.draw_word([canvas.draw_char(letter.upper(), GlyphColor.COLD) for letter in letters])
 
     def get_history(self) -> list:
         return self.guesses
 
-    def draw_word(self, word):
-        return self.canvas.draw_word([self.draw_letter(letter) for letter in self.check_word(word)])
+    def draw_word(self, word, canvas: Canvas):
+        return canvas.draw_word([self.draw_letter(letter, canvas) for letter in self.check_word(word)])
 
-    def draw_letter(self, letter) -> Glyph:
+    def draw_letter(self, letter, canvas: Canvas) -> Glyph:
         if letter['status'] == self.CORRECT:
-            return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.HOT)
+            return canvas.draw_char(letter['letter'].upper(), GlyphColor.HOT)
 
         if letter['status'] == self.INCORRECT:
-            return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.WARM)
+            return canvas.draw_char(letter['letter'].upper(), GlyphColor.WARM)
 
-        return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.COLD)
+        return canvas.draw_char(letter['letter'].upper(), GlyphColor.COLD)
 
     def check_word(self, word):
         target_map: list = [None if letter == word[i]
