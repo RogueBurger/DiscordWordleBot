@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+    command: [ "python3", "Main.py" ]
+    depends_on:
+      - redis
+    env_file: .env
+    environment:
+      - WORDLEBOT_REDIS__ENABLE=${WORDLEBOT_REDIS__ENABLED:-true}
+      - WORDLEBOT_REDIS__HOST=${WORDLEBOT_REDIS__HOST:-redis}
+      - WORDLEBOT_REDIS__PORT=${WORDLEBOT_REDIS__PORT:-6379}
+      - PYTHONUNBUFFERED=1
+    logging:
+      driver: json-file
+    restart: unless-stopped
+    volumes:
+      - ./:/srv
+
+  redis:
+    image: "redis:6.2-alpine"
+    command: redis-server
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+      - redis-conf:/usr/local/etc/redis/redis.conf
+
+volumes:
+  redis-data: null
+  redis-conf: null
