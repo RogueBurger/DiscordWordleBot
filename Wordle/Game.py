@@ -17,46 +17,44 @@ class Game:
     LIMITED: str = 'limited'
     PUZZLE: str = 'puzzle'
 
-    def __init__(self, canvas: Canvas, mode: str, word_length: int = 5):
-        self.canvas: Canvas = canvas
+    def __init__(self, mode: str, canvas: Canvas, word_length: int = 5):
         self.target: Optional[Word] = None
         self.mode = mode
         self.guesses: list = []
         self.progress: Optional[Image] = None
 
-        self.generate_target(word_length, mode)
+        self.generate_target(word_length, mode, canvas)
 
-    def generate_target(self, word_length: int, mode: str):
+    def generate_target(self, word_length: int, mode: str, canvas: Canvas):
         if mode == Game.PUZZLE:
             targets = Words.get_random(word_length, word_length + 1)
             self.target = targets[0]
             self.guesses = [word.word for word in targets[1:]]
             for guess in self.guesses:
-                drawn_word = self.draw_word(guess)
-                self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
+                drawn_word = self.draw_word(guess, canvas)
+                self.progress = canvas.vertical_join(
+                    self.progress, drawn_word) if self.progress else drawn_word
         else:
             self.target = Words.get_random(word_length)[0]
-
-        if self.target:
-            print(f'New game started: "{self.target.word}"')
 
     def suggest(self):
         return Words.get_random(len(self.target))[0].word
 
-    def guess(self, word: str, author_id: int) -> tuple:
-        lowered_word = word.lower()
-
-    def guess(self, word: str, canvas: Canvas) -> tuple:
+    def guess(self, word: str, author_id: int, canvas: Canvas) -> tuple:
         if not word or len(word) != len(self.target):
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
+
+        lowered_word = word.lower()
 
         if lowered_word != self.target.word and self.mode != self.PUZZLE and not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot(author_id)}', None
 
-        drawn_word = self.draw_word(lowered_word)
+        drawn_word = self.draw_word(lowered_word, canvas)
+
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
-            self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
+            self.progress = canvas.vertical_join(
+                self.progress, drawn_word) if self.progress else drawn_word
 
         if lowered_word == self.target.word:
             if self.mode == Game.PUZZLE:
@@ -69,7 +67,6 @@ class Game:
                 f'{word} is the correct answer! Congrats! ' \
                 f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
                 f'*{word}*: {self.target.definition}', \
-
                 self.progress
 
         if self.mode in [self.LIMITED, self.PUZZLE] and len(self.guesses) > len(self.target):

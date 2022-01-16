@@ -3,7 +3,7 @@ from typing import Optional
 
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import Context, Bot, CommandError
+from discord.ext.commands import Context, Bot, CommandError, CommandNotFound
 
 from Helpers.RandomText import RandomText
 
@@ -11,7 +11,6 @@ from .Canvas import Canvas
 from .Game import Game
 from .GameManager import GameManager
 from .Lock import LockNotFoundError
-from .RedisClient import RedisConnectionError
 from .Store import GameNotFoundError, Store
 from .Words import Words
 
@@ -23,20 +22,20 @@ class Wordle(commands.Cog):
         self.games: GameManager = GameManager(state_backend)
         self.logger: logging.Logger = logger.getChild(self.__class__.__name__)
 
-    async def cog_command_error(self, ctx: Context, error: CommandError):
-        err = getattr(error, 'original', error)
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: Context, error: CommandError):
+        original = error if not hasattr(error, 'original') else error.original
 
-        if isinstance(err, GameNotFoundError) or isinstance(err, LockNotFoundError):
+        if isinstance(original, CommandNotFound):
+            self.logger.debug(error)
+            return
+
+        if isinstance(original, GameNotFoundError) or isinstance(original, LockNotFoundError):
             return await ctx.send(
                 'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
             )
 
-        if isinstance(err, RedisConnectionError):
-            self.logger.warn(
-                f'Failed to process message "{ctx.message.content}" due to Redis connection error')
-            return await ctx.send(f'_{RandomText.hal_9000()}_')
-
-        raise err
+        raise error
 
     @commands.command(aliases=['s'])
     async def start(self, ctx: Context, word_length: Optional[int] = 5, mode: Optional[str] = Game.EASY):
@@ -51,7 +50,7 @@ class Wordle(commands.Cog):
         if word_length < 2 or word_length > 20:
             return await ctx.send('Unfortunately I only support words with between 2 and 20 letters.')
 
-        game = Game(word_length=word_length, mode=mode)
+        game = Game(word_length=word_length, mode=mode, canvas=self.canvas)
 
         self.logger.debug(f'New game started: {game.target.word}')
 
@@ -89,7 +88,8 @@ class Wordle(commands.Cog):
         async with self.games.lock(ctx.message.channel.id):
             game = await self.games.get_current_game(ctx.message.channel.id)
 
-            status, message, image = game.guess(word, self.canvas)
+            status, message, image = game.guess(
+                word, author_id=ctx.author.id, canvas=self.canvas)
             await self.games.update_game(ctx.message.channel.id, game)
 
             if status in [Game.CORRECT, Game.FAILED]:
@@ -137,11 +137,6 @@ class Wordle(commands.Cog):
                 'These letters haven\'t been tried yet:',
                 file=game.get_unused_letters(self.canvas).to_discord_file()
             )
-
-        return await ctx.send(
-            'These letters haven\'t been tried yet:',
-            file=game.get_unused_letters().to_discord_file()
-        )
 
     @commands.command()
     async def suggest(self, ctx: Context):

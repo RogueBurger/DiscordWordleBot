@@ -1,7 +1,5 @@
 import asyncio
 
-from Wordle.Lock import LockError
-
 
 class InMemoryLock(asyncio.Lock):
     async def __aexit__(self, *args):

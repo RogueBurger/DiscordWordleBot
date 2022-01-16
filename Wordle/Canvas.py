@@ -18,7 +18,7 @@ class UnsupportedColorException(Exception):
 
 
 class Image:
-    def __init__(self, image: PILImage, format = 'png'):
+    def __init__(self, image: PILImage, format='png'):
         self.id = str(uuid.uuid4())
         self.image = image
         self.format = format
@@ -73,9 +73,12 @@ class Canvas:
         max_char_height = max(char_heights)
         mode_char_height = max(char_heights, key=char_heights.count)
 
-        self.glyph_width = max_char_width + int(max_char_width * self.HORIZONTAL_PADDING_FACTOR)
-        self.glyph_height = max_char_height + int(max_char_height * self.VERTICAL_PADDING_FACTOR)
-        self.vertical_offset = (self.glyph_height - int(mode_char_height * self.FONT_HEIGHT_OFFSET_FACTOR)) / 2
+        self.glyph_width = max_char_width + \
+            int(max_char_width * self.HORIZONTAL_PADDING_FACTOR)
+        self.glyph_height = max_char_height + \
+            int(max_char_height * self.VERTICAL_PADDING_FACTOR)
+        self.vertical_offset = (
+            self.glyph_height - int(mode_char_height * self.FONT_HEIGHT_OFFSET_FACTOR)) / 2
 
     def draw_char(self, char: str, color: GlyphColor) -> Glyph:
         if char not in self._glyphs.keys():

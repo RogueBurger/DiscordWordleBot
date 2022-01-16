@@ -10,6 +10,7 @@ import logging
 
 from discord import Message
 from discord.ext import commands
+from discord.ext.commands.errors import CommandInvokeError
 
 from Config import Config, ConfigValidationError
 from ErrorHandler.ErrorHandler import ErrorHandler
@@ -62,8 +63,15 @@ async def run(config: Config, logger: logging.Logger):
         logger.info(f'Bot started with {state_backend.type_desc} state')
 
     @bot.event
+    async def on_error(event_method: str, *args, **kwargs):
+        if len(args) > 1 and isinstance(args[1], CommandInvokeError):
+            if hasattr(args[1], 'original') and isinstance(args[1].original, RedisConnectionError):
+                return logger.error(args[1])
+        raise
+
+    @bot.event
     async def on_message(msg: Message):
-        if msg.channel.id in config.deny_channels:
+        if config.deny_channels in config.deny_channels:
             return
 
         if config.allow_channels and msg.channel.id not in config.allow_channels:
