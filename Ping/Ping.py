@@ -24,7 +24,7 @@ class Ping(commands.Cog):
     # TODO: implement a real ban system instead of this silly in-memory one
     @commands.command()
     async def unban(self, ctx: Context, member: Member):
-        if ctx.author.id != 108633439984439296:
+        if not await ctx.bot.is_owner(ctx.author):
             return
 
         if member.id in self.banned_users.keys():
@@ -33,7 +33,7 @@ class Ping(commands.Cog):
 
     @commands.command()
     async def ban(self, ctx: Context, member: Member):
-        if ctx.author.id != 108633439984439296:
+        if not await ctx.bot.is_owner(ctx.author):
             return
 
         if member.id not in self.banned_users.keys():
