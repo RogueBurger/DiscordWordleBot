@@ -9,6 +9,7 @@ services:
       - redis
     env_file: .env
     environment:
+      - WORDLEBOT_LOG_LEVEL=${WORDLEBOT_LOG_LEVEL:-INFO}
       - WORDLEBOT_REDIS__ENABLE=${WORDLEBOT_REDIS__ENABLED:-true}
       - WORDLEBOT_REDIS__HOST=${WORDLEBOT_REDIS__HOST:-redis}
       - WORDLEBOT_REDIS__PORT=${WORDLEBOT_REDIS__PORT:-6379}

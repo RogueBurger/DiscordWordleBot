@@ -1,6 +1,4 @@
 from contextlib import asynccontextmanager
-from typing import Optional
-
 
 from Wordle.Game import Game
 from Wordle.Lock import LockNotFoundError
@@ -42,7 +40,7 @@ class InMemoryStore():
                 'lock': InMemoryLock()
             }
         except KeyError:
-            raise GameNotAddedError
+            raise GameNotAddedError()
 
         return game
 
@@ -57,4 +55,4 @@ class InMemoryStore():
         try:
             return self.games[channel_id]['game']
         except KeyError:
-            raise GameNotFoundError
+            raise GameNotFoundError()

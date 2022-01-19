@@ -1,9 +1,9 @@
-from asyncio import Lock
+import asyncio
 
 from Wordle.Lock import LockError
 
 
-class InMemoryLock(Lock):
+class InMemoryLock(asyncio.Lock):
     async def __aexit__(self, *args):
         return await self.release()
 
@@ -11,9 +11,14 @@ class InMemoryLock(Lock):
         return super().release()
 
     async def acquire(self, **kwargs) -> bool:
-        return await super().acquire()
+        try:
+            return await asyncio.wait_for(
+                super().acquire(),
+                timeout=kwargs.get('timeout'))
+        except asyncio.TimeoutError:
+            return False
 
     async def extend(self, **kwargs) -> bool:
-        if await super().acquire():
-            return self
-        raise LockError()
+        if await self.acquire(**kwargs):
+            return True
+        return False

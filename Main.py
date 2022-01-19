@@ -3,17 +3,18 @@ import hashlib
 import os
 import urllib.request
 import functools
+import random
 import signal
 import sys
 import logging
 
 from discord import Message
 from discord.ext import commands
-from discord.ext.commands.errors import CommandInvokeError
 
 from Config import Config, ConfigValidationError
+from ErrorHandler.ErrorHandler import ErrorHandler
 from Ping.Ping import Ping
-from Wordle.Lock import Lock, LockNotOwnedError, LockNotFoundError
+from Wordle.Lock import Lock, LockNotOwnedError
 from Wordle.Wordle import Wordle
 from Wordle.Words import Words
 from Wordle.RedisClient import RedisClient, RedisConnectionError
@@ -35,7 +36,9 @@ async def run(config: Config, logger: logging.Logger):
             sig, functools.partial(shutdown, sig, stopped, logger))
 
     state_backend: Store = InMemoryStore()
+
     lock: Lock = InMemoryLock()
+    lock_timeout: float = 10.0
 
     if config.redis.enable:
         try:
@@ -48,21 +51,15 @@ async def run(config: Config, logger: logging.Logger):
         state_backend = RedisStore(redis)
         lock_key = hashlib.sha256(config.token.encode()).hexdigest()
         lock = redis.lock(
-            f'wordlebot:lock:{lock_key}', timeout=10, blocking_timeout=1)
+            f'wordlebot:lock:{lock_key}', timeout=lock_timeout, blocking_timeout=1)
 
+    bot.add_cog(ErrorHandler(bot, logger=logger))
     bot.add_cog(Wordle(bot, state_backend=state_backend, logger=logger))
-    bot.add_cog(Ping(bot))
+    bot.add_cog(Ping(bot, logger=logger))
 
     @bot.event
     async def on_ready():
         logger.info(f'Bot started with {state_backend.type_desc} state')
-
-    @bot.event
-    async def on_error(event_method: str, *args, **kwargs):
-        if len(args) > 1 and isinstance(args[1], CommandInvokeError):
-            if hasattr(args[1], 'original') and isinstance(args[1].original, RedisConnectionError):
-                return logger.error(args[1])
-        raise
 
     @bot.event
     async def on_message(msg: Message):
@@ -85,34 +82,43 @@ async def run(config: Config, logger: logging.Logger):
                     locked.set()
                     return
             except RedisConnectionError as e:
-                logger.warning(f'RedisConnectionError: {e}')
-                await asyncio.sleep(5)
+                r = random.random()
+                if r <= 0.2:
+                    logger.warning(f'RedisConnectionError: {e}')
+                await asyncio.sleep(r * 5)
 
     async def extend_lock(
             unlocked_event: asyncio.Event,
             stop_event: asyncio.Event,
-            new_ttl: float = 10.0):
+            new_ttl: float):
+
+        freq: int = 2
+        interval: float = new_ttl / freq
 
         while True:
             if stop_event.is_set():
                 unlocked_event.set()
                 return
 
+            r = 1.0
+
             try:
-                await asyncio.sleep(5)
                 await asyncio.wait_for(
                     lock.extend(additional_time=new_ttl, replace_ttl=True),
                     timeout=1.0)
             except asyncio.TimeoutError:
                 continue
             except RedisConnectionError as e:
-                # TODO: Exponential backoff
-                logger.warning(f'RedisConnectionError: {e}')
+                r = random.random()
+                if r <= 0.2:
+                    logger.warning(f'RedisConnectionError: {e}')
             except Exception as e:
                 logger.warning(
                     f'Failed to extend lock. {e.__class__.__name__}: {e}')
                 unlocked_event.set()
                 return
+
+            await asyncio.sleep(interval * r)
 
     locked = asyncio.Event()
     unlocked = asyncio.Event()
@@ -127,9 +133,15 @@ async def run(config: Config, logger: logging.Logger):
             logger.info('Lock acquired')
 
             tasks = [
-                loop.create_task(extend_lock(
-                    unlocked, stopped), name='extend_lock'),
-                loop.create_task(bot.start(config.token), name='bot')]
+                loop.create_task(
+                    extend_lock(
+                        unlocked_event=unlocked,
+                        stop_event=stopped,
+                        new_ttl=lock_timeout),
+                    name='extend_lock'),
+                loop.create_task(
+                    bot.start(config.token),
+                    name='bot')]
 
             await unlocked.wait()
 
@@ -171,7 +183,10 @@ def main():
         Words.seed()
         logger.info('Setup complete.')
 
-    asyncio.run(run(config, logger))
+    try:
+        asyncio.run(run(config, logger))
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == '__main__':
