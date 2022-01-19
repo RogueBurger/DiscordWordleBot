@@ -45,7 +45,6 @@ class ErrorHandler(commands.Cog):
         err = hasattr(error, 'original', error)
 
         if isinstance(err, RedisConnectionError):
-            self.logger.warn('WWWWTTTTFFFF')
             return
 
         raise error
