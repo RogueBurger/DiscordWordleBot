@@ -3,7 +3,9 @@ from typing import Optional
 
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import Context, Bot, CommandError, CommandNotFound
+from discord.ext.commands import Context, Bot, CommandError
+
+from Helpers.RandomText import RandomText
 
 from Helpers.RandomText import RandomText
 
@@ -11,6 +13,7 @@ from .Canvas import Canvas
 from .Game import Game
 from .GameManager import GameManager
 from .Lock import LockNotFoundError
+from .RedisClient import RedisConnectionError
 from .Store import GameNotFoundError, Store
 from .Words import Words
 
@@ -22,20 +25,20 @@ class Wordle(commands.Cog):
         self.games: GameManager = GameManager(state_backend)
         self.logger: logging.Logger = logger.getChild(self.__class__.__name__)
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: Context, error: CommandError):
-        original = error if not hasattr(error, 'original') else error.original
+    async def cog_command_error(self, ctx: Context, error: CommandError):
+        err = getattr(error, 'original', error)
 
-        if isinstance(original, CommandNotFound):
-            self.logger.debug(error)
-            return
-
-        if isinstance(original, GameNotFoundError) or isinstance(original, LockNotFoundError):
+        if isinstance(err, GameNotFoundError) or isinstance(err, LockNotFoundError):
             return await ctx.send(
                 'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
             )
 
-        raise error
+        if isinstance(err, RedisConnectionError):
+            self.logger.warn(
+                f'Failed to process message "{ctx.message.content}" due to Redis connection error')
+            return await ctx.send(f'_{RandomText.hal_9000()}_')
+
+        raise err
 
     @commands.command(aliases=['s'])
     async def start(self, ctx: Context, word_length: Optional[int] = 5, mode: Optional[str] = Game.EASY):
