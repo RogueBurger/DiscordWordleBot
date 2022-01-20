@@ -4,6 +4,8 @@ from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
 
+from Helpers.RandomText import RandomText
+
 from .Game import Game
 from .GameManager import GameManager
 from .Words import Words
@@ -35,7 +37,7 @@ class Wordle(commands.Cog):
 
         if game.mode == Game.PUZZLE:
             await ctx.send(
-                f'Puzzle started. I\'m think of a word that is {word_length} letters long. Can you guess it?',
+                f'Alright, {RandomText.smarty()}...can you solve my puzzle?',
                 file=game.progress.to_discord_file()
             )
         else:
