@@ -1,5 +1,6 @@
 from typing import Optional
 
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Context, Bot
 
@@ -17,7 +18,6 @@ class Wordle(commands.Cog):
 
     @commands.command(aliases=['s'])
     async def start(self, ctx: Context, word_length: Optional[int] = 5, mode: Optional[str] = Game.EASY):
-
         if self.games.get_current_game(ctx.message.channel.id):
             return await ctx.send(
                 'Game already in progress. Use `%guess <word>` to continue playing, or `%stop` to end the game early.'
@@ -33,9 +33,15 @@ class Wordle(commands.Cog):
 
         self.games.add_game(ctx.message.channel.id, game)
 
-        await ctx.send(
-            f'Game started. I\'m think of a word that is {word_length} letters long. Can you guess it?'
-        )
+        if game.mode == Game.PUZZLE:
+            await ctx.send(
+                f'Puzzle started. I\'m think of a word that is {word_length} letters long. Can you guess it?',
+                file=game.progress.to_discord_file()
+            )
+        else:
+            await ctx.send(
+                f'Game started. I\'m think of a word that is {word_length} letters long. Can you guess it?'
+            )
 
         return
 
@@ -63,7 +69,7 @@ class Wordle(commands.Cog):
                 'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
             )
 
-        status, message, image = game.guess(word)
+        status, message, image = game.guess(word, ctx.author.id)
         if status in [Game.CORRECT, Game.FAILED]:
             self.games.stop_current_game(ctx.message.channel.id)
 
@@ -116,4 +122,17 @@ class Wordle(commands.Cog):
         return await ctx.send(
             'These letters haven\'t been tried yet:',
             file=game.get_unused_letters().to_discord_file()
+        )
+
+    @commands.command()
+    async def suggest(self, ctx: Context):
+        game = self.games.get_current_game(ctx.message.channel.id)
+
+        if not game:
+            return await ctx.send(
+                'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
+            )
+
+        return await ctx.send(
+            f'Try this one: {game.suggest()}'
         )

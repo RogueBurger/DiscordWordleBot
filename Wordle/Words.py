@@ -51,16 +51,16 @@ class Words:
             return [Words.__hydrate_word(row[0], row[1]) for row in cur.fetchall()]
 
     @staticmethod
-    def get_random(word_length: int = 5) -> Optional[Word]:
+    def get_random(word_length: int = 5, count: int = 1) -> list[Word]:
         con = sqlite3.connect(Words.DATABASE)
         with closing(con.cursor()) as cur:
             cur.execute(
                 'SELECT word, definition FROM words '
-                'WHERE LENGTH(word)=? ORDER BY RANDOM() LIMIT 1',
-                (word_length,)
+                'WHERE LENGTH(word)=? ORDER BY RANDOM() LIMIT ?',
+                (word_length, count)
             )
-            row = cur.fetchone()
-            return Words.__hydrate_word(row[0], row[1]) if row else None
+            rows = cur.fetchall()
+            return [Word(word=row[0], definition=row[1]) for row in rows]
 
     @staticmethod
     def __hydrate_word(word: str, definition: str) -> Word:

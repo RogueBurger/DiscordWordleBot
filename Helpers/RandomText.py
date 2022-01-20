@@ -3,7 +3,10 @@ import random
 
 class RandomText:
     @staticmethod
-    def idiot():
+    def idiot(author_id=None):
+        if author_id == 685214248606892111:
+            return 'Wordle Penetrations Master'
+
         first_word = random.choice([
             'complete', 'absolute', 'total fucking', 'enormous', 'supreme', 'toasty', 'dumb', 'consumate', 'perfect'
         ])
