@@ -49,7 +49,7 @@ class Game:
         if not word or len(word) != len(self.target):
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
 
-        if lowered_word != self.target.word and not Words.get_by_word(lowered_word):
+        if lowered_word != self.target.word and self.mode != self.PUZZLE and not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot(author_id)}', None
 
         drawn_word = self.draw_word(lowered_word)
