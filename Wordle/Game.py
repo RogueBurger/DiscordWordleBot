@@ -58,11 +58,17 @@ class Game:
             self.progress = self.canvas.vertical_join(self.progress, drawn_word) if self.progress else drawn_word
 
         if lowered_word == self.target.word:
+            if self.mode == Game.PUZZLE:
+                return self.CORRECT, \
+                    f'Okay, you got me! The word was {word}.\n' \
+                    f'*{word}*: {self.target.definition}', \
+                    self.progress
+
             return self.CORRECT, \
-                f'{word} is the correct answer! Congrats! ' \
-                f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
-                f'*{word}*: {self.target.definition}', \
-                self.progress
+                    f'{word} is the correct answer! Congrats! ' \
+                    f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
+                    f'*{word}*: {self.target.definition}', \
+                    self.progress
 
         if self.mode in [self.LIMITED, self.PUZZLE] and len(self.guesses) > len(self.target):
             return self.FAILED, \
