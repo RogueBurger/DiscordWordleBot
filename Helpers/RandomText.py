@@ -3,7 +3,10 @@ import random
 
 class RandomText:
     @staticmethod
-    def idiot():
+    def idiot(author_id=None):
+        if author_id == 685214248606892111:
+            return 'Wordle Penetrations Master'
+
         first_word = random.choice([
             'complete', 'absolute', 'total fucking', 'enormous', 'supreme', 'toasty', 'dumb', 'consumate', 'perfect'
         ])
@@ -16,6 +19,22 @@ class RandomText:
         ])
 
         return f'{first_word} {second_word}'
+
+    @staticmethod
+    def smarty():
+        title = random.choice([
+            'President', 'Admiral', 'Colonel', 'Commissioner', 'Count', 'Dr.', 'General', 'Governor', 'Grand Master', 
+            'High Priest', 'Pope', 'Senator', 'Captain', 'Lieutenant', 'Professor', 'Chancellor', 'Mr.', 'Miss'
+        ])
+        
+        modifier = random.choice([
+            'Know-it-all', 'Taj Mowry', 'Wise Guy', 'Brainiac', 'Wisenheimer', 'Clever Clogs', 'Smarty-pants', 
+            'Dictionary', 'Einstein', 'Genius', 'Witling', 'Mastermind', 'Whiz Kid', 'Thinker', 'Polymath', 'da Vinci',
+            'Geekwad', 'Nerd', 'Intellectual', 'Crackerjack', 'Egghead', 'Academic', 'Wordlesmith', 'Does-NYT-Crosswords-In-Pen',
+            'Bookworm', 'Pat Sajak', 'Encyclopedia', 'Expert', 'IQ', 'Hotshot', 'Poindexter', 'Prodigy', 'Will Shortz'
+        ])
+
+        return f'{title} {modifier}'
 
     @staticmethod
     def all_star():

@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Context, Bot, CommandError
 
@@ -59,9 +60,15 @@ class Wordle(commands.Cog):
 
         await self.games.add_game(ctx.message.channel.id, game)
 
-        await ctx.send(
-            f'Game started. I\'m think of a word that is {word_length} letters long. Can you guess it?'
-        )
+        if game.mode == Game.PUZZLE:
+            await ctx.send(
+                f'Alright, {RandomText.smarty()}...can you solve my puzzle?',
+                file=game.progress.to_discord_file()
+            )
+        else:
+            await ctx.send(
+                f'Game started. I\'m think of a word that is {word_length} letters long. Can you guess it?'
+            )
 
         return
 
@@ -130,3 +137,21 @@ class Wordle(commands.Cog):
                 'These letters haven\'t been tried yet:',
                 file=game.get_unused_letters(self.canvas).to_discord_file()
             )
+
+        return await ctx.send(
+            'These letters haven\'t been tried yet:',
+            file=game.get_unused_letters().to_discord_file()
+        )
+
+    @commands.command()
+    async def suggest(self, ctx: Context):
+        game = self.games.get_current_game(ctx.message.channel.id)
+
+        if not game:
+            return await ctx.send(
+                'There is no game currently in progress. To start a new one, use `%start <word_length=5>`.'
+            )
+
+        return await ctx.send(
+            f'Try this one: {game.suggest()}'
+        )
