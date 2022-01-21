@@ -63,7 +63,7 @@ async def run(config: Config, logger: logging.Logger):
 
     @bot.event
     async def on_message(msg: Message):
-        if config.deny_channels in config.deny_channels:
+        if msg.channel.id in config.deny_channels:
             return
 
         if config.allow_channels and msg.channel.id not in config.allow_channels:
