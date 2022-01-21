@@ -53,7 +53,7 @@ class Wordle(commands.Cog):
         if word_length < 2 or word_length > 20:
             return await ctx.send('Unfortunately I only support words with between 2 and 20 letters.')
 
-        game = Game(word_length=word_length, mode=mode, canvas=self.canvas)
+        game = self.games.create_game(word_length=word_length, mode=mode)
 
         self.logger.debug(f'New game started: {game.target.word}')
 
@@ -91,8 +91,7 @@ class Wordle(commands.Cog):
         async with self.games.lock(ctx.message.channel.id):
             game = await self.games.get_current_game(ctx.message.channel.id)
 
-            status, message, image = game.guess(
-                word, author_id=ctx.author.id, canvas=self.canvas)
+            status, message, image = game.guess(word, author_id=ctx.author.id)
             await self.games.update_game(ctx.message.channel.id, game)
 
             if status in [Game.CORRECT, Game.FAILED]:
@@ -138,7 +137,7 @@ class Wordle(commands.Cog):
 
             return await ctx.send(
                 'These letters haven\'t been tried yet:',
-                file=game.get_unused_letters(self.canvas).to_discord_file()
+                file=game.get_unused_letters().to_discord_file()
             )
 
     @commands.command()
