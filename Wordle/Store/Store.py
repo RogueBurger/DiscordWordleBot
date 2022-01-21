@@ -33,17 +33,17 @@ class Store(Protocol):
         ...
 
     @asynccontextmanager
-    def lock(self, channel_id: int) -> Lock:
+    def lock(self, server_id: int, channel_id: int) -> Lock:
         ...
 
-    def update_game(self, channel_id: int, game: Game) -> Game:
+    def update_game(self, server_id: int, channel_id: int, game: Game) -> Game:
         ...
 
-    def add_game(self, channel_id: int, game: Game) -> Game:
+    def add_game(self, server_id: int, channel_id: int, game: Game) -> Game:
         ...
 
-    def remove_game(self, channel_id: int) -> bool:
+    def remove_game(self, server_id: int, channel_id: int) -> bool:
         ...
 
-    async def get_game(self) -> Optional[Game]:
+    async def get_game(self, server_id: int, channel_id: int) -> Game:
         ...

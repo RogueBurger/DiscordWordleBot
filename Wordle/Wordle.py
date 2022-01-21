@@ -1,11 +1,8 @@
 import logging
 from typing import Optional
 
-from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Context, Bot, CommandError
-
-from Helpers.RandomText import RandomText
 
 from Helpers.RandomText import RandomText
 
@@ -43,7 +40,7 @@ class Wordle(commands.Cog):
     @commands.command(aliases=['s'])
     async def start(self, ctx: Context, word_length: Optional[int] = 5, mode: Optional[str] = Game.EASY):
         try:
-            if await self.games.get_current_game(ctx.message.channel.id):
+            if await self.games.get_current_game(ctx.message.channel):
                 return await ctx.send(
                     'Game already in progress. Use `%guess <word>` to continue playing, or `%stop` to end the game early.'
                 )
@@ -60,7 +57,7 @@ class Wordle(commands.Cog):
         if not game.target:
             return await ctx.send('Unfortunately I can\'t find a word of that length.')
 
-        await self.games.add_game(ctx.message.channel.id, game)
+        await self.games.add_game(ctx.message.channel, game)
 
         if game.mode == Game.PUZZLE:
             await ctx.send(
@@ -76,11 +73,11 @@ class Wordle(commands.Cog):
 
     @commands.command()
     async def stop(self, ctx: Context):
-        game = await self.games.get_current_game(ctx.message.channel.id)
+        game = await self.games.get_current_game(ctx.message.channel)
 
         word, definition = game.target.word, game.target.definition
 
-        await self.games.stop_current_game(ctx.message.channel.id)
+        await self.games.stop_current_game(ctx.message.channel)
         await ctx.send(
             f'Game stopped. The answer was {word}: {definition}'
         )
@@ -88,14 +85,14 @@ class Wordle(commands.Cog):
 
     @commands.command(aliases=['g'])
     async def guess(self, ctx: Context, word: Optional[str] = None):
-        async with self.games.lock(ctx.message.channel.id):
-            game = await self.games.get_current_game(ctx.message.channel.id)
+        async with self.games.lock(ctx.message.channel):
+            game = await self.games.get_current_game(ctx.message.channel)
 
             status, message, image = game.guess(word, author_id=ctx.author.id)
-            await self.games.update_game(ctx.message.channel.id, game)
+            await self.games.update_game(ctx.message.channel, game)
 
             if status in [Game.CORRECT, Game.FAILED]:
-                await self.games.stop_current_game(ctx.message.channel.id)
+                await self.games.stop_current_game(ctx.message.channel)
 
             if status == Game.FAILED:
                 await ctx.send(file=image.to_discord_file())
@@ -120,8 +117,8 @@ class Wordle(commands.Cog):
 
     @commands.command(aliases=['p'])
     async def progress(self, ctx: Context):
-        async with self.games.lock(ctx.message.channel.id):
-            game = await self.games.get_current_game(ctx.message.channel.id)
+        async with self.games.lock(ctx.message.channel):
+            game = await self.games.get_current_game(ctx.message.channel)
 
             if not game.guesses:
                 return await ctx.send(
@@ -132,8 +129,8 @@ class Wordle(commands.Cog):
 
     @commands.command(aliases=['h'])
     async def hint(self, ctx: Context):
-        async with self.games.lock(ctx.message.channel.id):
-            game = await self.games.get_current_game(ctx.message.channel.id)
+        async with self.games.lock(ctx.message.channel):
+            game = await self.games.get_current_game(ctx.message.channel)
 
             return await ctx.send(
                 'These letters haven\'t been tried yet:',
@@ -142,7 +139,7 @@ class Wordle(commands.Cog):
 
     @commands.command()
     async def suggest(self, ctx: Context):
-        game = self.games.get_current_game(ctx.message.channel.id)
+        game = self.games.get_current_game(ctx.message.channel)
 
         if not game:
             return await ctx.send(

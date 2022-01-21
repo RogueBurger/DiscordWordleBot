@@ -20,18 +20,22 @@ class RedisStore():
     def type_desc(self) -> str:
         return self.store_type.value
 
-    @asynccontextmanager
-    async def lock(self, channel_id: int) -> Lock:
+    def path(self, server_id: int, channel_id: int, key: str):
+        return self.client.path(
+            self.path_prefix, 'server', server_id, 'channel', channel_id, key)
+
+    @ asynccontextmanager
+    async def lock(self, server_id: int, channel_id: int) -> Lock:
         async with self.client.lock(
-                self.client.path(self.path_prefix, 'lock', channel_id),
+                self.path(server_id, channel_id, 'lock'),
                 timeout=5,
                 blocking_timeout=10):
 
             yield
 
-    async def get_game(self, channel_id: int) -> Game:
+    async def get_game(self, server_id: int, channel_id: int) -> Game:
         pickled_game = await self.client.get(
-            self.client.path(self.path_prefix, 'game', channel_id))
+            self.path(server_id, channel_id, 'game'))
 
         if pickled_game:
             return pickle.loads(pickled_game)
@@ -39,33 +43,37 @@ class RedisStore():
         raise GameNotFoundError()
 
     async def _set_game(self,
-                        channel_id: str,
+                        server_id: int,
+                        channel_id: int,
                         game: Game,
                         only_if_new: bool = False,
                         must_exist: bool = False) -> bool:
 
         return await self.client.set(
-            name=self.client.path(self.path_prefix, 'game', channel_id),
+            name=self.path(server_id, channel_id, 'game'),
             value=pickle.dumps(game),
             nx=only_if_new,
             xx=must_exist)
 
-    async def update_game(self, channel_id: str, game: Game) -> Game:
+    async def update_game(self, server_id: int, channel_id: int, game: Game) -> Game:
         if await self._set_game(
-                channel_id=channel_id, game=game, must_exist=True):
-
+                server_id=server_id,
+                channel_id=channel_id,
+                game=game,
+                must_exist=True):
             return game
 
         raise GameNotUpdatedError()
 
-    async def add_game(self, channel_id: str, game: Game) -> Game:
+    async def add_game(self, server_id: int, channel_id: int, game: Game) -> Game:
         if await self._set_game(
-                channel_id=channel_id, game=game, only_if_new=True):
-
+                server_id=server_id,
+                channel_id=channel_id,
+                game=game,
+                only_if_new=True):
             return game
-
         raise GameNotAddedError()
 
-    async def remove_game(self, channel_id: int) -> bool:
+    async def remove_game(self, server_id: int, channel_id: int) -> bool:
         return await self.client.delete(
-            self.client.path(self.path_prefix, 'game', channel_id)) == 1
+            self.path(server_id, channel_id, 'game')) == 1
