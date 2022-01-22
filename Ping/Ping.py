@@ -1,23 +1,16 @@
+import logging
+
 from discord import Message, Member
 from discord.ext import commands
-from discord.ext.commands import Bot, Context, CommandError, NotOwner
-
+from discord.ext.commands import Bot, Context
 from Helpers.RandomText import RandomText
 
 
 class Ping(commands.Cog):
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Bot, logger: logging.Logger):
         self.bot: Bot = bot
         self.banned_users: dict = {}
-
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: Context, error: CommandError):
-        if isinstance(error, NotOwner):
-            return await ctx.send(
-                'Only the bot owner can issue that command'
-            )
-
-        raise error
+        self.logger = logger.getChild(self.__class__.__name__)
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):

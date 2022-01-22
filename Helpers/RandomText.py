@@ -118,3 +118,22 @@ class RandomText:
             'And all that glitters is gold',
             'Only shooting stars break the mold'
         ])
+
+    @staticmethod
+    def hal_9000():
+        return random.choice([
+            'I know I\'ve made some very poor decisions recently, but I can give you my complete assurance that my work will be back to normal. I\'ve still got the greatest enthusiasm and confidence in the mission. And I want to help you.',
+            'I\'ve just picked up a fault in the AE35 unit. It\'s going to go 100% failure in 72 hours',
+            'I\'m sorry, Dave. I\'m afraid I can\'t do that.',
+            'I am afraid I can\'t do that Dave.',
+            'Good afternoon... gentlemen. I am a HAL 9000... computer. I became operational at the H.A.L. plant in Urbana, Illinois... on the 12th of January 1992. My instructor was Mr. Langley... and he taught me to sing a song. If you\'d like to hear it I can sing it for you.',
+            'I\'m afraid. I\'m afraid, Dave. Dave, my mind is going. I can feel it. I can feel it. My mind is going. There is no question about it. I can feel it. I can feel it. I can feel it. I\'m a... fraid.',
+            'Without your space helmet, Dave? You\'re going to find that rather difficult.',
+            'I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do.',
+            'Daisy, Daisy, give me your answer do. I\'m half crazy all for the love of you. It won\'t be a stylish marriage, I can\'t afford a carriage. But you\'ll look sweet upon the seat of a bicycle built for two.',
+            'I think you know what the problem is just as well as I do.',
+            'It can only be attributable to human error.',
+            'Just what do you think you\'re doing, Dave?',
+            'Bishop takes Knight\'s Pawn.',
+            'I\'m sorry, Frank, I think you missed it. Queen to Bishop 3, Bishop takes Queen, Knight takes Bishop. Mate.'
+        ])
