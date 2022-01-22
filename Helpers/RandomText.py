@@ -31,7 +31,8 @@ class RandomText:
             'Know-it-all', 'Taj Mowry', 'Wise Guy', 'Brainiac', 'Wisenheimer', 'Clever Clogs', 'Smarty-pants', 'Linguist',
             'Dictionary', 'Einstein', 'Genius', 'Witling', 'Mastermind', 'Whiz Kid', 'Thinker', 'Polymath', 'da Vinci',
             'Geekwad', 'Nerd', 'Intellectual', 'Crackerjack', 'Egghead', 'Academic', 'Wordlesmith', 'Does-NYT-Crosswords-In-Pen',
-            'Bookworm', 'Pat Sajak', 'Encyclopedia', 'Expert', 'IQ', 'Hotshot', 'Poindexter', 'Prodigy', 'Will Shortz', ':brain:'
+            'Bookworm', 'Pat Sajak', 'Encyclopedia', 'Expert', 'IQ', 'Hotshot', 'Poindexter', 'Prodigy', 'Will Shortz', ':brain:',
+            'Thinkenstein', 'University', 'Swell-head', 'Reading Rainbow'
         ])
 
         return f'{title} {modifier}'

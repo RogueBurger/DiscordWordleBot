@@ -71,7 +71,7 @@ class Game:
                     self.progress
 
             return self.CORRECT, \
-                f'{RandomText.success()} {word} is the correct answer!' \
+                f'{RandomText.success()} {word.capitalize()} is the correct answer!' \
                 f'It took you {len(self.guesses)} {self.get_guess_word(len(self.guesses))}.\n' \
                 f'*{word}*: {self.target.definition}', \
                 self.progress
