@@ -32,7 +32,7 @@ If you already have a redis server running, just add its host and port to your c
 # config.yaml
 
 redis:
-    enabled: true
+    enable: true
     host: "redis.local"
     port: 6379
 ```
@@ -40,7 +40,7 @@ redis:
 ```.env
 # .env
 
-WORDLEBOT_REDIS__ENABLED="true"
+WORDLEBOT_REDIS__ENABLE="true"
 WORDLEBOT_REDIS__HOST="redis.local"
 WORDLEBOT_REDIS__PORT="6379"
 ```
