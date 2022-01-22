@@ -24,17 +24,45 @@ class RandomText:
     def smarty():
         title = random.choice([
             'President', 'Admiral', 'Colonel', 'Commissioner', 'Count', 'Dr.', 'General', 'Governor', 'Grand Master', 
-            'High Priest', 'Pope', 'Senator', 'Captain', 'Lieutenant', 'Professor', 'Chancellor', 'Mr.', 'Miss'
+            'High Priest', 'Pope', 'Senator', 'Captain', 'Lieutenant', 'Professor', 'Chancellor', 'Mr.', 'Miss', 'Cunning'
         ])
         
         modifier = random.choice([
-            'Know-it-all', 'Taj Mowry', 'Wise Guy', 'Brainiac', 'Wisenheimer', 'Clever Clogs', 'Smarty-pants', 
+            'Know-it-all', 'Taj Mowry', 'Wise Guy', 'Brainiac', 'Wisenheimer', 'Clever Clogs', 'Smarty-pants', 'Linguist',
             'Dictionary', 'Einstein', 'Genius', 'Witling', 'Mastermind', 'Whiz Kid', 'Thinker', 'Polymath', 'da Vinci',
             'Geekwad', 'Nerd', 'Intellectual', 'Crackerjack', 'Egghead', 'Academic', 'Wordlesmith', 'Does-NYT-Crosswords-In-Pen',
-            'Bookworm', 'Pat Sajak', 'Encyclopedia', 'Expert', 'IQ', 'Hotshot', 'Poindexter', 'Prodigy', 'Will Shortz'
+            'Bookworm', 'Pat Sajak', 'Encyclopedia', 'Expert', 'IQ', 'Hotshot', 'Poindexter', 'Prodigy', 'Will Shortz', ':brain:',
+            'Thinkenstein', 'University', 'Swell-head', 'Reading Rainbow'
         ])
 
         return f'{title} {modifier}'
+
+    @staticmethod
+    def success():
+        exclamation = random.choice([
+            'Holy shit', 'Damn', 'Dang', 'Jeeeeez', 'Sheesh', 'Okay, you got me', ':scream_cat:', 'Wow', 'Well, well, well',
+            'Success', 'Aw, fiddlesticks',  'Aw, man'
+        ])
+
+        follow_up = random.choice([
+            'You solved my puzzle', 'Boy, is my face red', 'You did it', 'Looks like I\'ll have to find another job',
+            'I guess I\'m a terrible puzzle master :pensive:', 'This is just _great_'
+        ])
+
+        return f'{exclamation}! {follow_up}.' 
+
+    @staticmethod
+    def failure():
+        exclamation = random.choice([
+            'Ruh roh', 'Whoopsie doodle', 'Oh no', 'Sucks to suck', 'Darn it', 'Womp womp', 'Awwww'
+        ])
+
+        follow_up = random.choice([
+            'you ran out of guesses', 'looks like the jig is up', 'it\'s curtains for you', 'don\'t quit your day job',
+            'you\'ll never work in this town again', ''
+        ])
+
+        return f'{exclamation}...{follow_up}!'
 
     @staticmethod
     def all_star():
