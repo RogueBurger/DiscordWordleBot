@@ -139,7 +139,7 @@ class Wordle(commands.Cog):
 
     @commands.command()
     async def suggest(self, ctx: Context):
-        game = self.games.get_current_game(ctx.message.channel)
+        game = await self.games.get_current_game(ctx.message.channel)
 
         if not game:
             return await ctx.send(

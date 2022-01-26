@@ -172,6 +172,7 @@ def main():
 
     logging.getLogger('WordleBot').setLevel(config.log_level)
     logger = logging.getLogger('WordleBot')
+    logger.info(f'Logging at log level: {logger.getEffectiveLevel()}')
 
     if not os.path.exists(Words.DATABASE):
         logger.info('Performing first time setup.')
