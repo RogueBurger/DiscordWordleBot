@@ -48,6 +48,9 @@ async def run(config: Config, logger: logging.Logger):
             logger.error(f'Unable to connect to Redis backend: {e}')
             return
 
+        logger.info(
+            f'Connected to Redis server at {config.redis.host}:{config.redis.port}')
+
         state_backend = RedisStore(redis)
         lock_key = hashlib.sha256(config.token.encode()).hexdigest()
         lock = redis.lock(
@@ -172,7 +175,8 @@ def main():
 
     logging.getLogger('WordleBot').setLevel(config.log_level)
     logger = logging.getLogger('WordleBot')
-    logger.info(f'Logging at log level: {logger.getEffectiveLevel()}')
+    logger.info(
+        f'Logging at log level: {logging.getLevelName(logger.getEffectiveLevel())}')
 
     if not os.path.exists(Words.DATABASE):
         logger.info('Performing first time setup.')
