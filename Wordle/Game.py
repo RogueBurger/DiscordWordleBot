@@ -23,6 +23,7 @@ class Game:
         self.canvas: Canvas = canvas
         self.guesses: list = []
         self.progress: Optional[Image] = None
+        self.limit: int = self.get_limit_for_length(word_length)
 
         self.generate_target(word_length=word_length, mode=mode)
 
@@ -33,7 +34,7 @@ class Game:
 
     def generate_target(self, word_length: int, mode: str):
         if mode == Game.PUZZLE:
-            targets = Words.get_random(word_length, word_length + 1)
+            targets = Words.get_random(word_length, self.limit)
             self.target = targets[0]
             self.guesses = [word.word for word in targets[1:]]
             for guess in self.guesses:
@@ -76,7 +77,7 @@ class Game:
                 f'*{word}*: {self.target.definition}', \
                 self.progress
 
-        if self.mode in [self.LIMITED, self.PUZZLE] and len(self.guesses) > len(self.target):
+        if self.mode in [self.LIMITED, self.PUZZLE] and len(self.guesses) >= self.limit:
             return self.FAILED, \
                 f'{RandomText.failure()}\n' \
                 f'The correct answer is {self.target.word}. ' \
@@ -84,7 +85,7 @@ class Game:
                 drawn_word
 
         if self.mode in [self.LIMITED, self.INCORRECT]:
-            remaining: int = len(self.target) - len(self.guesses) + 1
+            remaining: int = self.limit - len(self.guesses)
             return self.INCORRECT, \
                 f'Incorrect. You have {remaining} {self.get_guess_word(remaining)} left.', \
                 drawn_word
@@ -138,3 +139,14 @@ class Game:
     @staticmethod
     def get_guess_word(count: int) -> str:
         return 'guess' if count == 1 else 'guesses'
+
+    @staticmethod
+    def get_limit_for_length(length: int) -> int:
+        if length < 2:
+            length = 2
+        if length > 15:
+            length = 15
+
+        length_to_limit = {2: 6, 3: 5, 4: 5, 5: 6, 6: 6, 7: 7, 8: 7, 9: 8, 10: 8, 11: 9, 12: 9, 13: 9, 14: 9, 15: 10}
+
+        return length_to_limit[length]

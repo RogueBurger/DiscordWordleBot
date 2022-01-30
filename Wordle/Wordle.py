@@ -42,7 +42,8 @@ class Wordle(commands.Cog):
         try:
             if await self.games.get_current_game(ctx.message.channel):
                 return await ctx.send(
-                    'Game already in progress. Use `%guess <word>` to continue playing, or `%stop` to end the game early.'
+                    'Game already in progress. Use `%guess <word>` to continue playing, '
+                    'or `%stop` to end the game early.'
                 )
         except GameNotFoundError:
             pass
@@ -63,6 +64,11 @@ class Wordle(commands.Cog):
             await ctx.send(
                 f'Alright, {RandomText.smarty()}...can you solve my puzzle?',
                 file=game.progress.to_discord_file()
+            )
+        elif game.mode == Game.LIMITED:
+            await ctx.send(
+                f'Game started. I\'m think of a word that is {word_length} letters long. '
+                f'You get {game.limit} guesses. Go!'
             )
         else:
             await ctx.send(
