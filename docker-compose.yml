@@ -7,13 +7,11 @@ services:
     command: [ "python3", "Main.py" ]
     depends_on:
       - redis
-    env_file: .env
     environment:
-      - WORDLEBOT_LOG_LEVEL=${WORDLEBOT_LOG_LEVEL:-INFO}
-      - WORDLEBOT_REDIS__ENABLE=${WORDLEBOT_REDIS__ENABLE:-true}
-      - WORDLEBOT_REDIS__HOST=${WORDLEBOT_REDIS__HOST:-redis}
-      - WORDLEBOT_REDIS__PORT=${WORDLEBOT_REDIS__PORT:-6379}
       - PYTHONUNBUFFERED=1
+      - WORDLEBOT_REDIS__ENABLE="${WORDLEBOT_REDIS__ENABLE:-true}"
+      - WORDLEBOT_REDIS__HOST="${WORDLEBOT_REDIS__HOST:-redis}"
+      - WORDLEBOT_REDIS__PORT="${WORDLEBOT_REDIS__PORT:-6379}"
     logging:
       driver: json-file
     restart: unless-stopped

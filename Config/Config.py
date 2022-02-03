@@ -26,7 +26,8 @@ class Config():
     def __init__(self,
                  load_dotenv: bool = True,
                  envvar_prefix: str = 'WORDLEBOT',
-                 settings_files: list[str] = ['config.yaml']):
+                 settings_files: list[str] = ['config.yaml'],
+                 yaml_loader: str = 'safe_load'):
 
         log_levels = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 
@@ -34,6 +35,7 @@ class Config():
             load_dotenv=load_dotenv,
             envvar_prefix=envvar_prefix,
             settings_files=settings_files,
+            yaml_loader=yaml_loader,
             validators=[
                 Validator('token', 'wordlist', required=True),
                 Validator(
@@ -46,17 +48,16 @@ class Config():
                             ', '.join(log_levels)
                         ])
                     }),
-                Validator('allow_channels', default=[]),
-                Validator('deny_channels', default=[]),
+                Validator('allow_channels', 'deny_channels', default=[]),
                 Validator('redis.enable', default=False),
+                Validator('redis.host', default='127.0.0.1'),
                 Validator('redis.port', default=6379),
-                Validator(
-                    'redis.host', 'redis.port',
-                    required=True,
-                    when=Validator('redis.enable', eq=True),
-                    messages={
-                        'must_exist_true': '{name} is required when redis is enabled'
-                    })
+                Validator('redis.host', 'redis.port',
+                          when=Validator('redis.enable', eq=True),
+                          condition=lambda x: x,
+                          messages={
+                              'condition': 'host and port cannot be empty'
+                          })
             ])
 
         try:
