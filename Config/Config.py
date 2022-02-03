@@ -85,15 +85,15 @@ class Config():
 
         fields = fields or self.__dataclass_fields__
         for _, field in fields.items():
+            key = '.'.join(filter(None, [prefix, field.name]))
+
             if is_dataclass(field.type):
                 res[field.name] = field.type(
                     **self._lazysettings_attr_mapper(
                         settings=settings,
                         fields=field.type.__dataclass_fields__,
-                        prefix=field.name))
+                        prefix=key))
                 continue
-
-            key = '.'.join(filter(None, [prefix, field.name]))
 
             val = settings.get(key)
             if field.type == bool and not isinstance(val, bool):
