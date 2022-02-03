@@ -1,6 +1,8 @@
 token: ""
 wordlist: "https://drive.google.com/u/0/uc?id=1XIFdZukAcDRiDIOgR_rHpICrrgJbLBxV&export=download"
-log_level: info
+
+# log_level: info
+# verbose: false
 
 # Uncomment to configure an external redis server
 # redis:
