@@ -22,6 +22,7 @@ class Config():
     token: str
     wordlist: str
     log_level: str
+    verbose: bool
     allow_channels: list[int]
     deny_channels: list[int]
     redis: RedisConfig
@@ -51,6 +52,7 @@ class Config():
                             ', '.join(log_levels)
                         ])
                     }),
+                Validator('verbose', default=False),
                 Validator('allow_channels', 'deny_channels', default=[]),
                 Validator('redis.enable', default=False),
                 Validator('redis.host', default='127.0.0.1'),
