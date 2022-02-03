@@ -1,4 +1,7 @@
-from dataclasses import dataclass
+
+from dataclasses import dataclass, is_dataclass, Field
+from distutils.util import strtobool
+from typing import Any, Dict, Optional
 
 from dynaconf import LazySettings, Validator, ValidationError
 
@@ -67,5 +70,33 @@ class Config():
 
         config.log_level = config.log_level.upper()
 
-        for field in self.__dataclass_fields__.keys():
-            self.__setattr__(field, config.get(field))
+        for attr, val in self._lazysettings_attr_mapper(config).items():
+            self.__setattr__(attr, val)
+
+    def _lazysettings_attr_mapper(
+            self,
+            settings: LazySettings,
+            fields: Optional[Dict[str, Field]] = None,
+            prefix: Optional[str] = None) -> Dict[str, Any]:
+
+        res = {}
+
+        fields = fields or self.__dataclass_fields__
+        for _, field in fields.items():
+            if is_dataclass(field.type):
+                res[field.name] = field.type(
+                    **self._lazysettings_attr_mapper(
+                        settings=settings,
+                        fields=field.type.__dataclass_fields__,
+                        prefix=field.name))
+                continue
+
+            key = '.'.join(filter(None, [prefix, field.name]))
+
+            val = settings.get(key)
+            if field.type == bool and not isinstance(val, bool):
+                val = strtobool(str(val))
+
+            res[field.name] = val
+
+        return res
