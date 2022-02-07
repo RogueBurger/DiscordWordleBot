@@ -17,6 +17,8 @@ class Game:
     LIMITED: str = 'limited'
     PUZZLE: str = 'puzzle'
 
+    CHAR_WHITELIST = []
+
     def __init__(self, mode: str, word_length: int = 5, canvas: Optional[Canvas] = None):
         self.target: Optional[Word] = None
         self.mode: str = mode
@@ -52,6 +54,9 @@ class Game:
             return self.INVALID, f'Your guesses must be {len(self.target)} letters long.', None
 
         lowered_word = word.lower()
+
+        if any(letter for letter in lowered_word if letter not in string.ascii_lowercase):
+            return self.INVALID, f'{word} contains illegal characters, you {RandomText.idiot(author_id)}', None
 
         if lowered_word != self.target.word and self.mode != self.PUZZLE and not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot(author_id)}', None
