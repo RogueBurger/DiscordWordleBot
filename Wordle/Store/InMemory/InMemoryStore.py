@@ -4,8 +4,7 @@ from Wordle.Game import Game
 from Wordle.Lock import LockNotFoundError
 from Wordle.Store.InMemory import InMemoryLock
 from Wordle.Store.Store import (
-    StoreType, GameNotFoundError,
-    GameNotAddedError, GameNotUpdatedError)
+    GameNotAddedError, StoreType, GameNotFoundError, GameNotUpdatedError)
 
 
 class InMemoryStore():
@@ -19,30 +18,28 @@ class InMemoryStore():
 
     @asynccontextmanager
     async def lock(self, server_id: int, channel_id: int) -> InMemoryLock:
-        try:
-            async with self.games[server_id][channel_id]['lock']:
-                yield
-        except KeyError:
+        if not self.games.get(server_id, {}).get(channel_id, {}).get('lock'):
             raise LockNotFoundError()
 
-    async def update_game(self, server_id: int, channel_id: int, game: Game) -> Game:
-        try:
-            self.games[server_id][channel_id]['game'] = game
-        except KeyError:
-            raise GameNotUpdatedError()
+        async with self.games[server_id][channel_id]['lock']:
+            yield
 
+    async def update_game(self, server_id: int, channel_id: int, game: Game) -> Game:
+        if not self.games.get(server_id, {}).get(channel_id, {}).get('game'):
+            raise GameNotUpdatedError('Game not found')
+
+        self.games[server_id][channel_id]['game'] = game
         return game
 
     async def add_game(self, server_id: int, channel_id: int, game: Game) -> Game:
-        self.games[server_id] = self.games.get(server_id, {})
+        if self.games.get(server_id, {}).get(channel_id, {}).get('game'):
+            raise GameNotAddedError('Game already exists')
 
-        try:
-            self.games[server_id][channel_id] = {
-                'game': game,
-                'lock': InMemoryLock()
-            }
-        except KeyError:
-            raise GameNotAddedError()
+        self.games[server_id] = self.games.get(server_id, {})
+        self.games[server_id][channel_id] = {
+            'game': game,
+            'lock': InMemoryLock()
+        }
 
         return game
 
@@ -54,7 +51,7 @@ class InMemoryStore():
             return False
 
     async def get_game(self, server_id: int, channel_id: int) -> Game:
-        try:
-            return self.games[server_id][channel_id]['game']
-        except KeyError:
+        if not self.games.get(server_id, {}).get(channel_id, {}).get('game'):
             raise GameNotFoundError()
+
+        return self.games[server_id][channel_id]['game']
