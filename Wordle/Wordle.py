@@ -144,6 +144,12 @@ class Wordle(commands.Cog):
                 file=game.draw_unused_letters().to_discord_file()
             )
 
+    @commands.command(aliases=['hh'])
+    async def known_letters(self, ctx: Context):
+        async with self.games.lock(ctx.message.channel):
+            game = await self.games.get_current_game(ctx.message.channel)
+            return await ctx.send('Here\'s what you know:', file=game.draw_known_letters().to_discord_file())
+
     @commands.command()
     async def suggest(self, ctx: Context):
         game = await self.games.get_current_game(ctx.message.channel)

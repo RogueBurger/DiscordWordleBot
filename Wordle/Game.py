@@ -108,6 +108,10 @@ class Game:
         return self.canvas.vertical_join([
             self.canvas.draw_word(word=word, size=GlyphSize.MEDIUM, rounded=True) for word in words])
 
+    def draw_known_letters(self):
+        return self.canvas.draw_word(word=[(letter.upper(), self.status_color(self.CORRECT)) if letter else (
+            ' ', self.status_color(self.INVALID)) for letter in self.target_progress])
+
     def draw_word(self, word: str):
         guess_map = self.check_word(word)
 
