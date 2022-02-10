@@ -1,1 +1,1 @@
-from .Config import Config, ConfigValidationError
+from .Config import Config, RedisConfig
