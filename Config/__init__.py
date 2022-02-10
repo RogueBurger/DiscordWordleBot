@@ -1,1 +1,1 @@
-from .Config import Config, RedisConfig
+from .Config import Config, RedisConfig, CanvasConfig, GlyphConfig

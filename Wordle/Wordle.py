@@ -6,7 +6,8 @@ from discord.ext.commands import Context, Bot, CommandError
 
 from Helpers.RandomText import RandomText
 
-from .Canvas import Canvas
+from Config import Config
+
 from .Game import Game
 from .GameManager import GameManager
 from .Lock import LockNotFoundError
@@ -16,10 +17,11 @@ from .Words import Words
 
 
 class Wordle(commands.Cog):
-    def __init__(self, bot: Bot, state_backend: Store, logger: logging.Logger):
+    def __init__(self, bot: Bot, config: Config, state_backend: Store, logger: logging.Logger):
         self.bot = bot
-        self.canvas = Canvas()
-        self.games: GameManager = GameManager(state_backend)
+        self.games: GameManager = GameManager(
+            canvas_config=config.canvas,
+            backend=state_backend)
         self.logger: logging.Logger = logger.getChild(self.__class__.__name__)
 
     async def cog_command_error(self, ctx: Context, error: CommandError):
@@ -139,8 +141,7 @@ class Wordle(commands.Cog):
             game = await self.games.get_current_game(ctx.message.channel)
 
             return await ctx.send(
-                'These letters haven\'t been tried yet:',
-                file=game.get_unused_letters().to_discord_file()
+                file=game.draw_unused_letters().to_discord_file()
             )
 
     @commands.command()

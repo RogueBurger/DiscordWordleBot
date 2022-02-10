@@ -11,7 +11,7 @@ import logging
 from discord import Message
 from discord.ext import commands
 
-from Config import Config, ConfigValidationError
+from Config import Config
 from ErrorHandler.ErrorHandler import ErrorHandler
 from Ping.Ping import Ping
 from Wordle.Lock import Lock, LockNotOwnedError
@@ -59,7 +59,8 @@ async def run(config: Config):
             f'wordlebot:lock:{lock_key}', timeout=lock_timeout, blocking_timeout=1)
 
     bot.add_cog(ErrorHandler(bot, logger=logger))
-    bot.add_cog(Wordle(bot, state_backend=state_backend, logger=logger))
+    bot.add_cog(Wordle(bot, config=config,
+                state_backend=state_backend, logger=logger))
     bot.add_cog(Ping(bot, logger=logger))
 
     @bot.event
@@ -171,7 +172,7 @@ def main():
 
     try:
         config = Config()
-    except ConfigValidationError as e:
+    except ValueError as e:
         logging.error(e)
         exit(1)
 
