@@ -1,10 +1,11 @@
 import string
-from typing import Optional
+from typing import Dict, Optional
 
 from Helpers.RandomText import RandomText
 from Wordle.Word import Word
 from Wordle.Words import Words
-from Wordle.Canvas import Canvas, Image, Glyph, GlyphColor
+from Wordle.Canvas import Canvas, Image
+from Wordle.Canvas.Glyph import GlyphColor, GlyphSize
 
 
 class Game:
@@ -26,6 +27,9 @@ class Game:
         self.guesses: list = []
         self.progress: Optional[Image] = None
         self.limit: int = self.get_limit_for_length(word_length)
+        self.letter_status: Dict[str, Optional[str]] = {
+            letter: None for letter in string.ascii_lowercase}
+        self.target_progress: list[Optional[str]] = [None] * word_length
 
         self.generate_target(word_length=word_length, mode=mode)
 
@@ -39,10 +43,8 @@ class Game:
             targets = Words.get_random(word_length, self.limit)
             self.target = targets[0]
             self.guesses = [word.word for word in targets[1:]]
-            for guess in self.guesses:
-                drawn_word = self.draw_word(guess)
-                self.progress = self.canvas.vertical_join(
-                    self.progress, drawn_word) if self.progress else drawn_word
+            self.progress = self.canvas.vertical_join(
+                images=[self.draw_word(guess) for guess in self.guesses])
         else:
             self.target = Words.get_random(word_length)[0]
 
@@ -61,12 +63,12 @@ class Game:
         if lowered_word != self.target.word and self.mode != self.PUZZLE and not Words.get_by_word(lowered_word):
             return self.INVALID, f'{word} is not a word, you {RandomText.idiot(author_id)}', None
 
-        drawn_word = self.draw_word(lowered_word)
+        image = self.draw_word(lowered_word)
 
         if lowered_word not in self.guesses:
             self.guesses.append(lowered_word)
             self.progress = self.canvas.vertical_join(
-                self.progress, drawn_word) if self.progress else drawn_word
+                images=list(filter(None, [self.progress, image])))
 
         if lowered_word == self.target.word:
             if self.mode == Game.PUZZLE:
@@ -87,49 +89,47 @@ class Game:
                 f'{RandomText.failure()}\n' \
                 f'The correct answer is {self.target.word}. ' \
                 f'*{self.target.word}*: {self.target.definition}', \
-                drawn_word
+                image
 
         if self.mode in [self.LIMITED, self.INCORRECT]:
             remaining: int = self.limit - len(self.guesses)
             return self.INCORRECT, \
                 f'Incorrect. You have {remaining} {self.get_guess_word(remaining)} left.', \
-                drawn_word
+                image
 
-        return self.INCORRECT, None, drawn_word
+        return self.INCORRECT, None, image
 
-    def get_unused_letters(self):
-        letters = list(string.ascii_lowercase)
-        for word in self.guesses:
-            for letter in word:
-                letters.remove(letter) if letter in letters else None
-        return self.canvas.draw_word([self.canvas.draw_char(letter.upper(), GlyphColor.COLD) for letter in letters])
+    def draw_unused_letters(self):
+        rows = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm']
 
-    def get_history(self) -> list:
-        return self.guesses
+        words = [[(letter.upper(), self.status_color(self.letter_status[letter]))
+                  for letter in row] for row in rows]
 
-    def draw_word(self, word):
-        return self.canvas.draw_word([self.draw_letter(letter) for letter in self.check_word(word)])
+        return self.canvas.vertical_join([
+            self.canvas.draw_word(word=word, size=GlyphSize.MEDIUM, rounded=True) for word in words])
 
-    def draw_letter(self, letter) -> Glyph:
-        if letter['status'] == self.CORRECT:
-            return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.HOT)
+    def draw_known_letters(self):
+        return self.canvas.draw_word(word=[(letter.upper(), self.status_color(self.CORRECT)) if letter else (
+            ' ', self.status_color(self.INVALID)) for letter in self.target_progress])
 
-        if letter['status'] == self.INCORRECT:
-            return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.WARM)
+    def draw_word(self, word: str):
+        guess_map = self.check_word(word)
 
-        return self.canvas.draw_char(letter['letter'].upper(), GlyphColor.COLD)
+        word = [(letter['letter'].upper(), self.status_color(letter['status']))
+                for letter in guess_map]
+
+        return self.canvas.draw_word(word)
 
     def check_word(self, word):
         target_map: list = [None if letter == word[i]
                             else letter for i, letter in enumerate(self.target.word)]
-        guess_map: list = [
-            {'letter': letter, 'status': None} if target_map[i] else {
-                'letter': letter, 'status': self.CORRECT}
-            for i, letter in enumerate(word)
-        ]
+
+        guess_map: list = [{'letter': letter, 'status': None} if target_map[i] else {
+            'letter': letter, 'status': self.CORRECT} for i, letter in enumerate(word)]
 
         for i, letter in enumerate(guess_map):
             if letter['status'] == self.CORRECT:
+                self.target_progress[i] = letter['letter']
                 continue
 
             if letter['letter'] in target_map:
@@ -139,7 +139,34 @@ class Game:
 
             guess_map[i]['status'] = self.INVALID
 
+        for item in guess_map:
+            letter = item['letter']
+            status = item['status']
+            existing = self.letter_status[letter]
+
+            if existing in [self.CORRECT, self.INVALID]:
+                continue
+
+            if existing is None:
+                self.letter_status[letter] = status
+                continue
+
+            if status in [self.CORRECT, self.INCORRECT]:
+                self.letter_status[letter] = status
+                continue
+
         return guess_map
+
+    def status_color(
+            self,
+            status: str,
+            default: GlyphColor = GlyphColor.LIGHT_GRAY) -> GlyphColor:
+
+        return {
+            self.CORRECT: GlyphColor.GREEN,
+            self.INCORRECT: GlyphColor.YELLOW,
+            self.INVALID: GlyphColor.DARK_GRAY
+        }.get(status, default)
 
     @staticmethod
     def get_guess_word(count: int) -> str:
@@ -152,6 +179,7 @@ class Game:
         if length > 15:
             length = 15
 
-        length_to_limit = {2: 6, 3: 5, 4: 5, 5: 6, 6: 6, 7: 7, 8: 7, 9: 8, 10: 8, 11: 9, 12: 9, 13: 9, 14: 9, 15: 10}
+        length_to_limit = {2: 6, 3: 5, 4: 5, 5: 6, 6: 6, 7: 7,
+                           8: 7, 9: 8, 10: 8, 11: 9, 12: 9, 13: 9, 14: 9, 15: 10}
 
         return length_to_limit[length]

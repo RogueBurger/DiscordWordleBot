@@ -24,7 +24,7 @@ class RedisStore():
         return self.client.path(
             self.path_prefix, 'server', server_id, 'channel', channel_id, key)
 
-    @ asynccontextmanager
+    @asynccontextmanager
     async def lock(self, server_id: int, channel_id: int) -> Lock:
         async with self.client.lock(
                 self.path(server_id, channel_id, 'lock'),

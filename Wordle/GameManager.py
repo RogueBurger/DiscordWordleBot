@@ -2,6 +2,8 @@ from contextlib import asynccontextmanager
 
 from discord import TextChannel, DMChannel
 
+from Config import CanvasConfig
+
 from Wordle.Canvas import Canvas
 from Wordle.Game import Game
 from Wordle.Lock import Lock
@@ -9,9 +11,9 @@ from Wordle.Store import Store
 
 
 class GameManager:
-    def __init__(self, backend: Store):
+    def __init__(self, canvas_config: CanvasConfig, backend: Store):
         self.store: Store = backend
-        self.canvas: Canvas = Canvas()
+        self.canvas: Canvas = Canvas(canvas_config)
 
     @staticmethod
     def server_id(channel: TextChannel) -> int:
@@ -42,5 +44,5 @@ class GameManager:
         return await self.store.remove_game(GameManager.server_id(channel), channel.id)
 
     async def update_game(self, channel: TextChannel, game: Game) -> Game:
-        """ raises GameNotUpdatedError """
+        """ raises GameNotFoundError """
         return await self.store.update_game(GameManager.server_id(channel), channel.id, game)

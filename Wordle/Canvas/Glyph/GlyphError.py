@@ -1,0 +1,6 @@
+class GlyphError(Exception):
+    ...
+
+
+class GlyphNotFound(GlyphError):
+    ...

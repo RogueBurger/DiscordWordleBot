@@ -11,7 +11,7 @@ import logging
 from discord import Message
 from discord.ext import commands
 
-from Config import Config, ConfigValidationError
+from Config import Config
 from ErrorHandler.ErrorHandler import ErrorHandler
 from Ping.Ping import Ping
 from Wordle.Lock import Lock, LockNotOwnedError
@@ -26,7 +26,9 @@ def shutdown(sig: signal, event: asyncio.Event, logger: logging.Logger):
     event.set()
 
 
-async def run(config: Config, logger: logging.Logger):
+async def run(config: Config):
+    logger = logging.getLogger('WordleBot')
+
     bot = commands.Bot(command_prefix='%')
     loop = bot.loop
 
@@ -57,7 +59,8 @@ async def run(config: Config, logger: logging.Logger):
             f'wordlebot:lock:{lock_key}', timeout=lock_timeout, blocking_timeout=1)
 
     bot.add_cog(ErrorHandler(bot, logger=logger))
-    bot.add_cog(Wordle(bot, state_backend=state_backend, logger=logger))
+    bot.add_cog(Wordle(bot, config=config,
+                state_backend=state_backend, logger=logger))
     bot.add_cog(Ping(bot, logger=logger))
 
     @bot.event
@@ -169,14 +172,19 @@ def main():
 
     try:
         config = Config()
-    except ConfigValidationError as e:
+    except ValueError as e:
         logging.error(e)
         exit(1)
 
-    logging.getLogger('WordleBot').setLevel(config.log_level)
     logger = logging.getLogger('WordleBot')
-    logger.info(
-        f'Logging at log level: {logging.getLevelName(logger.getEffectiveLevel())}')
+    if config.verbose:
+        logger = logging.getLogger()
+
+    logger.setLevel(config.log_level)
+    logger.info('{message} at log level: {level}'.format(
+        message='Verbose logging' if config.verbose else 'Logging',
+        level=logging.getLevelName(logger.getEffectiveLevel())
+    ))
 
     if not os.path.exists(Words.DATABASE):
         logger.info('Performing first time setup.')
@@ -189,7 +197,7 @@ def main():
         logger.info('Setup complete.')
 
     try:
-        asyncio.run(run(config, logger))
+        asyncio.run(run(config))
     except Exception as e:
         logger.error(e)
 
