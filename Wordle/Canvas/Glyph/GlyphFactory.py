@@ -1,73 +1,77 @@
+import math
 import string
 from typing import Dict
 
-from PIL import ImageDraw, ImageColor
+from PIL import ImageDraw
 from PIL import Image as PILImage
 
 from Config import GlyphConfig
 
 from .Glyph import Glyph
 from .GlyphColor import GlyphColor
-from .GlyphSize import GlyphSize
+from .GlyphShape import GlyphShape
 from .GlyphTemplate import GlyphTemplate
 
 
 class GlyphFactory:
     def __init__(self, config: GlyphConfig):
-        self._alphabet: str = ' ' + ''.join([string.printable.replace(char, '')
-                                             for char in string.whitespace])
+        self._alphabet: str = ' ' + string.digits + \
+            string.ascii_letters + string.punctuation
         self._error_char = '?'
         self._error_color = GlyphColor.RED
 
         assert self._error_char in self._alphabet
 
-        self._templates: Dict[GlyphSize, GlyphTemplate] = {
-            font_size.name: GlyphTemplate(
+        self._templates: Dict[GlyphShape] = {
+            GlyphShape.DEFAULT: GlyphTemplate(
                 alphabet=self._alphabet,
                 font_path=config.font_path,
-                font_size=font_size,
-                horizontal_pad_factor=config.horizontal_pad_factor,
-                vertical_pad_factor=config.vertical_pad_factor,
-                vertical_offset_factor=config.vertical_offset_factor,
-                square=config.square
-            ) for font_size in GlyphSize
-        }
+                font_size=config.font_size,
+                horizontal_pad=config.horizontal_pad,
+                vertical_pad=config.vertical_pad,
+                border_width=config.border_width,
+                square=config.square),
+            GlyphShape.WIDE: GlyphTemplate(
+                alphabet=self._alphabet,
+                font_path=config.font_path,
+                font_size=config.font_size,
+                horizontal_pad=config.wide_horizontal_pad,
+                vertical_pad=config.wide_vertical_pad,
+                border_width=config.border_width,
+                square=False)}
 
     def create_glyph(self,
                      char: str,
-                     size: GlyphSize,
                      color: GlyphColor,
-                     rounded: bool = False) -> Glyph:
+                     shape: GlyphShape) -> Glyph:
 
-        tpl = self._templates[size.name]
+        tpl = self._templates[shape]
 
         if char not in self._alphabet:
             char = self._error_char
             color = self._error_color
 
-        radius = tpl.size[0] / 4 if rounded else 0
-        outline_width = int(tpl.size[0] / 25) if rounded else 0
+        fill_color = color.value[0]
+        border_color = color.value[1]
+        font_color = color.value[2]
 
-        background_color = (0, 0, 0, 0)
-        font_color = (255, 255, 255, 255)
-        fill_color = ImageColor.getcolor(color.value, 'RGBA')
-        outline_color = tuple(fill_color[0:3]) + tuple([204])
-
-        img = PILImage.new('RGBA', tpl.size, color=background_color)
-        draw = ImageDraw.Draw(img, 'RGBA')
-
-        draw.rounded_rectangle(
+        # Create the main glyph tile
+        tile = PILImage.new('RGBA', tpl.size, color=color.value[0])
+        ImageDraw.Draw(tile, 'RGBA').rectangle(
             tpl.coords,
-            radius=radius,
             fill=fill_color,
-            width=outline_width,
-            outline=outline_color)
+            outline=border_color,
+            width=tpl.border_width)
 
-        draw.text(
-            tpl.char_anchor_coords(char=char),
-            text=char,
-            font=tpl.font,
-            fill=font_color)
+        # Create a character tile, cropped to the bounding box
+        char_tile = PILImage.new('RGBA', tpl.font.getsize(
+            char), color=fill_color)
+        ImageDraw.Draw(char_tile, 'RGBA').text(
+            (0, 0), text=char, font=tpl.font, fill=font_color)
+        char_tile = char_tile.crop(tpl.font.getbbox(char))
 
-        return Glyph(name=char, image=img, font=tpl.font,
-                     size=size, color=color, rounded=rounded)
+        tile.paste(char_tile, (math.floor((tile.width - char_tile.width) / 2),
+                               tpl.vertical_offset))
+
+        return Glyph(name=char, image=tile, font=tpl.font,
+                     shape=shape, color=color)
