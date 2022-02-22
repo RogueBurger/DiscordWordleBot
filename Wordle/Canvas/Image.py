@@ -8,10 +8,10 @@ from PIL import Image as PILImage
 
 
 class Image():
-    def __init__(self, image: PILImage, border_width: int, format: str = 'png'):
+    def __init__(self, image: PILImage, format: str = 'png'):
         self.id: str = str(uuid.uuid4())
         self.image: PILImage = image
-        self.border_width: int = border_width
+        # self.border_width: int = border_width
         self.format: str = format
 
     def __str__(self):
