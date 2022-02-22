@@ -7,7 +7,7 @@ from Helpers.RandomText import RandomText
 from Wordle.Word import Word
 from Wordle.Words import Words
 from Wordle.Canvas import Canvas, Image
-from Wordle.Canvas.Glyph import GlyphColor, GlyphSize
+from Wordle.Canvas.Glyph import GlyphColor, GlyphShape
 
 
 class Game:
@@ -107,12 +107,16 @@ class Game:
         words = [[(letter.upper(), self.status_color(self.letter_status[letter]))
                   for letter in row] for row in rows]
 
+        # Insert a blank character to shift the bottom row left
+        words[2].append((' ', GlyphColor.CLEAR))
+
         return self.canvas.vertical_join([
-            self.canvas.draw_word(word=word, size=GlyphSize.MEDIUM, rounded=True) for word in words])
+            self.canvas.draw_word(word=word, shape=GlyphShape.WIDE) for word in words])
 
     def draw_known_letters(self):
-        return self.canvas.draw_word(word=[(letter.upper(), self.status_color(self.CORRECT)) if letter else (
-            ' ', self.status_color(self.INVALID)) for letter in self.target_progress])
+        return self.canvas.draw_word(
+            word=[(letter.upper(), self.status_color(self.CORRECT)) if letter else (
+                ' ', self.status_color(self.INVALID)) for letter in self.target_progress])
 
     def draw_word(self, word: str):
         guess_map = self.check_word(word)
@@ -167,7 +171,7 @@ class Game:
         return {
             self.CORRECT: GlyphColor.GREEN,
             self.INCORRECT: GlyphColor.YELLOW,
-            self.INVALID: GlyphColor.DARK_GRAY
+            self.INVALID: GlyphColor.INVERSE_LIGHT_GRAY
         }.get(status, default)
 
     @staticmethod
@@ -187,7 +191,7 @@ class Game:
         return length_to_limit[length]
 
     def cheat(self):
-        if self.limit - len(self.guesses) < 3:
+        if self.limit - len(self.guesses) > 2:
             return (
                 'Whoa there, bub. At least try a *little*!'
             )
@@ -198,8 +202,6 @@ class Game:
             lst_possibles = []
             must_haves = []
             forbiddens = []
-            
-            print(list(self.target.word))
 
             for w in self.guesses:
                 for l in w:
@@ -207,10 +209,6 @@ class Game:
                         must_haves.append(l)
                     else:
                         forbiddens.append(l)
-                        print(l)
-
-            print(f'must-haves:\n{must_haves}')
-            print(f'Forbiddens\n{forbiddens}')
 
             for i in word_list:
                 if len(i) == len(self.target): # checks word length, working
