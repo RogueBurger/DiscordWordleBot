@@ -166,6 +166,4 @@ class Wordle(commands.Cog):
     async def cheat(self, ctx: Context):
         game = await self.games.get_current_game(ctx.message.channel)
 
-        return await ctx.send(
-            f'Fine...here you go...*cheater!*\n```{game.cheat()}```'
-        )
+        return await ctx.send(game.cheat())

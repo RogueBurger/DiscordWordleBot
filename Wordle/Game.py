@@ -187,37 +187,39 @@ class Game:
         return length_to_limit[length]
 
     def cheat(self):
-        with open("wordlist.json", "r") as f:
-            word_list = json.load(f)
-        
-        lst_possibles = []
-        must_haves = []
-        forbiddens = []
-        
-        print(list(self.target.word))
+        if self.limit - len(self.guesses) < 3:
+            return (
+                'Whoa there, bub. At least try a *little*!'
+            )
+        else:
+            with open("wordlist.json", "r") as f:
+                word_list = json.load(f)
+            
+            lst_possibles = []
+            must_haves = []
+            forbiddens = []
+            
+            print(list(self.target.word))
 
-        for w in self.guesses:
-            for l in w:
-                if l in list(self.target.word):
-                    must_haves.append(l)
-                else:
-                    forbiddens.append(l)
-                    print(l)
+            for w in self.guesses:
+                for l in w:
+                    if l in list(self.target.word):
+                        must_haves.append(l)
+                    else:
+                        forbiddens.append(l)
+                        print(l)
 
-        print(f'must-haves:\n{must_haves}')
-        print(f'Forbiddens\n{forbiddens}')
+            print(f'must-haves:\n{must_haves}')
+            print(f'Forbiddens\n{forbiddens}')
 
-        for i in word_list:
-            if len(i) == len(self.target): # checks word length, working
-                if not any(set(i) & set(forbiddens)): # checks if forbidden letters occur, working
-                    print(set(must_haves).intersection(set(i)))
-                    print(set(must_haves))
-                    if set(must_haves).intersection(set(i)) == set(must_haves): # checks if must-have letters occur, not working
-                        for l in self.target_progress:
-                            if (l != i[indexOf(self.target_progress,l)]) and (l != None):
-                                break
-                        else:
-                            lst_possibles.append(i)
+            for i in word_list:
+                if len(i) == len(self.target): # checks word length, working
+                    if not any(set(i) & set(forbiddens)): # checks if forbidden letters occur, working
+                        if set(must_haves).intersection(set(i)) == set(must_haves): # checks if must-have letters occur, working
+                            for l in self.target_progress:
+                                if (l != i[indexOf(self.target_progress,l)]) and (l != None):
+                                    break
+                            else:
+                                lst_possibles.append(i)
 
-        print(lst_possibles)
-        return(lst_possibles)
+            return f'Fine...here you go...*cheater!*\n```{lst_possibles}```'
