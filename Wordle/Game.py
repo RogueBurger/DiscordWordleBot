@@ -150,11 +150,11 @@ class Game:
             status = item['status']
             existing = self.letter_status[letter]
 
-            if existing in [self.CORRECT, self.INVALID]:
-                continue
-
             if existing is None:
                 self.letter_status[letter] = status
+                continue
+
+            if existing == self.CORRECT:
                 continue
 
             if status in [self.CORRECT, self.INCORRECT]:
