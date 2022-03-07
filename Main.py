@@ -13,6 +13,7 @@ from discord.ext import commands
 
 from Config import Config
 from ErrorHandler.ErrorHandler import ErrorHandler
+from Helpers.RandomText import RandomText
 from Ping.Ping import Ping
 from Wordle.Lock import Lock, LockNotOwnedError
 from Wordle.Wordle import Wordle
@@ -74,6 +75,9 @@ async def run(config: Config):
 
         if config.allow_channels and msg.channel.id not in config.allow_channels:
             return
+
+        if bot.user.mentioned_in(msg):
+            return await msg.channel.send(RandomText.hal_9000(msg.author.mention))
 
         await bot.process_commands(msg)
 
