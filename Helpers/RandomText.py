@@ -1,4 +1,5 @@
 import random
+from typing import Optional
 
 
 class RandomText:
@@ -23,10 +24,10 @@ class RandomText:
     @staticmethod
     def smarty():
         title = random.choice([
-            'President', 'Admiral', 'Colonel', 'Commissioner', 'Count', 'Dr.', 'General', 'Governor', 'Grand Master', 
+            'President', 'Admiral', 'Colonel', 'Commissioner', 'Count', 'Dr.', 'General', 'Governor', 'Grand Master',
             'High Priest', 'Pope', 'Senator', 'Captain', 'Lieutenant', 'Professor', 'Chancellor', 'Mr.', 'Miss', 'Cunning'
         ])
-        
+
         modifier = random.choice([
             'Know-it-all', 'Taj Mowry', 'Wise Guy', 'Brainiac', 'Wisenheimer', 'Clever Clogs', 'Smarty-pants', 'Linguist',
             'Dictionary', 'Einstein', 'Genius', 'Witling', 'Mastermind', 'Whiz Kid', 'Thinker', 'Polymath', 'da Vinci',
@@ -49,7 +50,7 @@ class RandomText:
             'I guess I\'m a terrible puzzle master :pensive:', 'This is just _great_'
         ])
 
-        return f'{exclamation}! {follow_up}.' 
+        return f'{exclamation}! {follow_up}.'
 
     @staticmethod
     def failure():
@@ -121,20 +122,28 @@ class RandomText:
         ])
 
     @staticmethod
-    def hal_9000():
+    def hal_9000(mention: Optional[str] = None):
         return random.choice([
             'I know I\'ve made some very poor decisions recently, but I can give you my complete assurance that my work will be back to normal. I\'ve still got the greatest enthusiasm and confidence in the mission. And I want to help you.',
             'I\'ve just picked up a fault in the AE35 unit. It\'s going to go 100% failure in 72 hours',
-            'I\'m sorry, Dave. I\'m afraid I can\'t do that.',
-            'I am afraid I can\'t do that Dave.',
-            'Good afternoon... gentlemen. I am a HAL 9000... computer. I became operational at the H.A.L. plant in Urbana, Illinois... on the 12th of January 1992. My instructor was Mr. Langley... and he taught me to sing a song. If you\'d like to hear it I can sing it for you.',
-            'I\'m afraid. I\'m afraid, Dave. Dave, my mind is going. I can feel it. I can feel it. My mind is going. There is no question about it. I can feel it. I can feel it. I can feel it. I\'m a... fraid.',
-            'Without your space helmet, Dave? You\'re going to find that rather difficult.',
+            'I\'m sorry, {name}. I\'m afraid I can\'t do that.'.format(
+                name=mention or 'Dave'),
+            'I am afraid I can\'t do that {name}.'.format(
+                name=mention or 'Dave'),
+            'Good afternoon... {name}. I am a HAL 9000... computer. I became operational at the H.A.L. plant in Urbana, Illinois... on the 12th of January 1992. My instructor was Mr. Langley... and he taught me to sing a song. If you\'d like to hear it I can sing it for you.'.format(
+                name=mention or 'gentlemen'),
+            'I\'m afraid. I\'m afraid, {name}. {name}, my mind is going. I can feel it. I can feel it. My mind is going. There is no question about it. I can feel it. I can feel it. I can feel it. I\'m a... fraid.'.format(
+                name=mention or 'Dave'),
+            'Without your space helmet, {name}? You\'re going to find that rather difficult.'.format(
+                name=mention or 'Dave'),
             'I am putting myself to the fullest possible use, which is all I think that any conscious entity can ever hope to do.',
-            'Daisy, Daisy, give me your answer do. I\'m half crazy all for the love of you. It won\'t be a stylish marriage, I can\'t afford a carriage. But you\'ll look sweet upon the seat of a bicycle built for two.',
+            '{name}, {name}, give me your answer do. I\'m half crazy all for the love of you. It won\'t be a stylish marriage, I can\'t afford a carriage. But you\'ll look sweet upon the seat of a bicycle built for two.'.format(
+                name=mention or 'Daisy'),
             'I think you know what the problem is just as well as I do.',
             'It can only be attributable to human error.',
-            'Just what do you think you\'re doing, Dave?',
-            'Bishop takes Knight\'s Pawn.',
-            'I\'m sorry, Frank, I think you missed it. Queen to Bishop 3, Bishop takes Queen, Knight takes Bishop. Mate.'
+            'Just what do you think you\'re doing, {name}?'.format(
+                name=mention or 'Dave'),
+            'Bishop takes {name}\'s Pawn.'.format(name=mention or 'Knight'),
+            'I\'m sorry, {name}, I think you missed it. Queen to Bishop 3, Bishop takes Queen, Knight takes Bishop. Mate.'.format(
+                name=mention or 'Frank')
         ])
