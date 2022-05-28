@@ -1,5 +1,7 @@
 import string
+import json
 from typing import Dict, Optional
+from operator import indexOf
 
 from Helpers.RandomText import RandomText
 from Wordle.Word import Word
@@ -187,3 +189,35 @@ class Game:
                            8: 7, 9: 8, 10: 8, 11: 9, 12: 9, 13: 9, 14: 9, 15: 10}
 
         return length_to_limit[length]
+
+    def cheat(self):
+        if self.limit - len(self.guesses) > 2:
+            return (
+                'Whoa there, bub. At least try a *little*!'
+            )
+        else:
+            with open("wordlist.json", "r") as f:
+                word_list = json.load(f)
+            
+            lst_possibles = []
+            must_haves = []
+            forbiddens = []
+
+            for w in self.guesses:
+                for l in w:
+                    if l in list(self.target.word):
+                        must_haves.append(l)
+                    else:
+                        forbiddens.append(l)
+
+            for i in word_list:
+                if len(i) == len(self.target): # checks word length, working
+                    if not any(set(i) & set(forbiddens)): # checks if forbidden letters occur, working
+                        if set(must_haves).intersection(set(i)) == set(must_haves): # checks if must-have letters occur, working
+                            for l in self.target_progress:
+                                if (l != i[indexOf(self.target_progress,l)]) and (l != None):
+                                    break
+                            else:
+                                lst_possibles.append(i)
+
+            return f'Fine...here you go...*cheater!*\n```{lst_possibles}```'
