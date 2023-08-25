@@ -12,7 +12,7 @@ Pillow==9.0.1
 pycodestyle==2.8.0
 pydantic==1.9.0
 python-dotenv==0.19.2
-PyYAML==6.0
+PyYAML==5.3
 toml==0.10.2
 typing-extensions==4.0.1
 yarl==1.7.2
