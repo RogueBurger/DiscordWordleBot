@@ -20,7 +20,7 @@ class Ping(commands.Cog):
         if message.author.id in self.banned_users.keys():
             return
 
-        if 'ping' in message.content:
+        if 'pong' in message.content:
             await message.channel.send(RandomText.all_star())
 
     # TODO: implement a real ban system instead of this silly in-memory one
